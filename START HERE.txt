@@ -1,0 +1,27 @@
+  ==========================================
+
+     fmnBilling
+
+  ==========================================
+
+  QUICK START:
+
+  1. Make sure Node.js and node_modules are already present.
+
+  2. Double-click "start-fmnBilling.bat"
+
+  3. Open:
+     http://localhost:5173
+
+
+  DATA LOCATION:
+
+  App data  -> Your Firebase Cloud Firestore
+  Backups   -> Settings > Export / Import
+
+
+  TROUBLESHOOTING:
+
+  If the page does not load:
+    -> Start the app with "start-fmnBilling.bat"
+    -> Open http://localhost:5173
