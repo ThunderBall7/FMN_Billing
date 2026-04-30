@@ -4,6 +4,7 @@ import { getAllReceipts, saveReceipt, deleteReceipt, getAllBills, getProfile } f
 import { formatCurrency, numberToWords } from '../utils';
 import { InlineLoadingState } from './LoadingSpinner';
 import { toast } from'../lib/toast';
+import { PrivateAmount } from './PrivacyContext';
 
 const PAYMENT_MODES = ['Bank Transfer', 'UPI', 'Cash', 'Cheque', 'Card', 'Other'];
 
@@ -169,7 +170,7 @@ export default function ReceiptVoucher() {
                         <strong>{bill.clientName}</strong>
                         <span style={{ marginLeft: '0.5rem', fontSize: '0.75rem', color: 'var(--text-muted)' }}>{bill.invoiceNumber}</span>
                       </div>
-                      <span style={{ fontWeight: 600 }}>{formatCurrency(bill.totalAmount - (bill.paidAmount || 0))}</span>
+                      <span style={{ fontWeight: 600 }}><PrivateAmount amount={bill.totalAmount - (bill.paidAmount || 0)} /></span>
                     </button>
                   ))}
                 </div>
@@ -290,7 +291,7 @@ export default function ReceiptVoucher() {
                     <td><span className="invoice-badge">{rcp.receiptNo}</span></td>
                     <td className="font-medium">{rcp.clientName}</td>
                     <td className="text-muted">{rcp.againstInvoice || '-'}</td>
-                    <td style={{ textAlign: 'right' }} className="font-bold">{formatCurrency(rcp.amount)}</td>
+                    <td style={{ textAlign: 'right' }} className="font-bold"><PrivateAmount amount={rcp.amount} /></td>
                     <td className="text-muted">{rcp.paymentMode}</td>
                     <td>
                       <div className="table-actions">

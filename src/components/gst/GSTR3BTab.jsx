@@ -1,6 +1,11 @@
 import { CheckCircle, Download } from 'lucide-react';
-import { formatCurrency, getStateCode } from '../../utils';
+import { getStateCode } from '../../utils';
 import { computeItemTaxSplit } from './gstReturnUtils';
+import { PrivateAmount } from '../PrivacyContext';
+
+function Money({ value }) {
+  return <PrivateAmount amount={value} />;
+}
 
 function getInterStateB2CRows(b2cBills) {
   const interStateB2C = {};
@@ -41,9 +46,9 @@ export default function GSTR3BTab({ exports, periodFiling, markFiled, grandTotal
           <table className="data-table" style={{ minWidth: '600px' }}>
             <thead><tr><th>Nature of Supplies</th><th style={{ textAlign: 'right' }}>Taxable Value</th><th style={{ textAlign: 'right' }}>IGST</th><th style={{ textAlign: 'right' }}>CGST</th><th style={{ textAlign: 'right' }}>SGST</th></tr></thead>
             <tbody>
-              <tr><td className="font-medium">(a) Outward taxable supplies (other than zero-rated, nil-rated and exempted)</td><td style={{ textAlign: 'right' }}>{formatCurrency(grandTotals.taxable)}</td><td style={{ textAlign: 'right' }}>{formatCurrency(grandTotals.igst)}</td><td style={{ textAlign: 'right' }}>{formatCurrency(grandTotals.cgst)}</td><td style={{ textAlign: 'right' }}>{formatCurrency(grandTotals.sgst)}</td></tr>
-              <tr><td className="font-medium">(b) Zero-rated supplies</td><td style={{ textAlign: 'right' }}>{formatCurrency(0)}</td><td style={{ textAlign: 'right' }}>{formatCurrency(0)}</td><td style={{ textAlign: 'right' }}>{formatCurrency(0)}</td><td style={{ textAlign: 'right' }}>{formatCurrency(0)}</td></tr>
-              <tr><td className="font-medium">(c) Non-GST supplies</td><td style={{ textAlign: 'right' }}>{formatCurrency(0)}</td><td colSpan={3} style={{ textAlign: 'center', color: 'var(--text-muted)' }}>N/A</td></tr>
+              <tr><td className="font-medium">(a) Outward taxable supplies (other than zero-rated, nil-rated and exempted)</td><td style={{ textAlign: 'right' }}><Money value={grandTotals.taxable} /></td><td style={{ textAlign: 'right' }}><Money value={grandTotals.igst} /></td><td style={{ textAlign: 'right' }}><Money value={grandTotals.cgst} /></td><td style={{ textAlign: 'right' }}><Money value={grandTotals.sgst} /></td></tr>
+              <tr><td className="font-medium">(b) Zero-rated supplies</td><td style={{ textAlign: 'right' }}><Money value={0} /></td><td style={{ textAlign: 'right' }}><Money value={0} /></td><td style={{ textAlign: 'right' }}><Money value={0} /></td><td style={{ textAlign: 'right' }}><Money value={0} /></td></tr>
+              <tr><td className="font-medium">(c) Non-GST supplies</td><td style={{ textAlign: 'right' }}><Money value={0} /></td><td colSpan={3} style={{ textAlign: 'center', color: 'var(--text-muted)' }}>N/A</td></tr>
             </tbody>
           </table>
         </div>
@@ -57,11 +62,11 @@ export default function GSTR3BTab({ exports, periodFiling, markFiled, grandTotal
               <thead><tr><th>Place of Supply</th><th style={{ textAlign: 'right' }}>Taxable Value</th><th style={{ textAlign: 'right' }}>IGST</th></tr></thead>
               <tbody>
                 {interStateRows.map((row, index) => (
-                  <tr key={index}><td className="font-medium">{row.pos}</td><td style={{ textAlign: 'right' }}>{formatCurrency(row.taxable)}</td><td style={{ textAlign: 'right' }}>{formatCurrency(row.igst)}</td></tr>
+                  <tr key={index}><td className="font-medium">{row.pos}</td><td style={{ textAlign: 'right' }}><Money value={row.taxable} /></td><td style={{ textAlign: 'right' }}><Money value={row.igst} /></td></tr>
                 ))}
               </tbody>
               <tfoot><tr style={{ fontWeight: 'bold', borderTop: '2px solid var(--border)' }}>
-                <td>Total</td><td style={{ textAlign: 'right' }}>{formatCurrency(interStateRows.reduce((sum, row) => sum + row.taxable, 0))}</td><td style={{ textAlign: 'right' }}>{formatCurrency(interStateRows.reduce((sum, row) => sum + row.igst, 0))}</td>
+                <td>Total</td><td style={{ textAlign: 'right' }}><Money value={interStateRows.reduce((sum, row) => sum + row.taxable, 0)} /></td><td style={{ textAlign: 'right' }}><Money value={interStateRows.reduce((sum, row) => sum + row.igst, 0)} /></td>
               </tr></tfoot>
             </table>
           </div>
@@ -74,8 +79,8 @@ export default function GSTR3BTab({ exports, periodFiling, markFiled, grandTotal
           <table className="data-table" style={{ minWidth: '500px' }}>
             <thead><tr><th>Details</th><th style={{ textAlign: 'right' }}>IGST</th><th style={{ textAlign: 'right' }}>CGST</th><th style={{ textAlign: 'right' }}>SGST</th></tr></thead>
             <tbody>
-              <tr><td className="font-medium">(A) ITC Available - All other ITC</td><td style={{ textAlign: 'right' }}>{formatCurrency(itcFromExpenses.igst)}</td><td style={{ textAlign: 'right' }}>{formatCurrency(itcFromExpenses.cgst)}</td><td style={{ textAlign: 'right' }}>{formatCurrency(itcFromExpenses.sgst)}</td></tr>
-              <tr className="font-bold"><td>Net ITC Available</td><td style={{ textAlign: 'right' }}>{formatCurrency(itcFromExpenses.igst)}</td><td style={{ textAlign: 'right' }}>{formatCurrency(itcFromExpenses.cgst)}</td><td style={{ textAlign: 'right' }}>{formatCurrency(itcFromExpenses.sgst)}</td></tr>
+              <tr><td className="font-medium">(A) ITC Available - All other ITC</td><td style={{ textAlign: 'right' }}><Money value={itcFromExpenses.igst} /></td><td style={{ textAlign: 'right' }}><Money value={itcFromExpenses.cgst} /></td><td style={{ textAlign: 'right' }}><Money value={itcFromExpenses.sgst} /></td></tr>
+              <tr className="font-bold"><td>Net ITC Available</td><td style={{ textAlign: 'right' }}><Money value={itcFromExpenses.igst} /></td><td style={{ textAlign: 'right' }}><Money value={itcFromExpenses.cgst} /></td><td style={{ textAlign: 'right' }}><Money value={itcFromExpenses.sgst} /></td></tr>
             </tbody>
           </table>
         </div>
@@ -90,13 +95,13 @@ export default function GSTR3BTab({ exports, periodFiling, markFiled, grandTotal
           <table className="data-table" style={{ minWidth: '600px' }}>
             <thead><tr><th>Description</th><th style={{ textAlign: 'right' }}>IGST</th><th style={{ textAlign: 'right' }}>CGST</th><th style={{ textAlign: 'right' }}>SGST</th><th style={{ textAlign: 'right' }}>Total</th></tr></thead>
             <tbody>
-              <tr><td className="font-medium">Output Tax Liability</td><td style={{ textAlign: 'right' }}>{formatCurrency(outputTax.igst)}</td><td style={{ textAlign: 'right' }}>{formatCurrency(outputTax.cgst)}</td><td style={{ textAlign: 'right' }}>{formatCurrency(outputTax.sgst)}</td><td style={{ textAlign: 'right' }} className="font-bold">{formatCurrency(outputTax.igst + outputTax.cgst + outputTax.sgst)}</td></tr>
-              <tr><td className="font-medium" style={{ color: '#059669' }}>Less: ITC Claimed</td><td style={{ textAlign: 'right', color: '#059669' }}>-{formatCurrency(itcFromExpenses.igst)}</td><td style={{ textAlign: 'right', color: '#059669' }}>-{formatCurrency(itcFromExpenses.cgst)}</td><td style={{ textAlign: 'right', color: '#059669' }}>-{formatCurrency(itcFromExpenses.sgst)}</td><td style={{ textAlign: 'right', color: '#059669' }}>-{formatCurrency(itcFromExpenses.igst + itcFromExpenses.cgst + itcFromExpenses.sgst)}</td></tr>
+              <tr><td className="font-medium">Output Tax Liability</td><td style={{ textAlign: 'right' }}><Money value={outputTax.igst} /></td><td style={{ textAlign: 'right' }}><Money value={outputTax.cgst} /></td><td style={{ textAlign: 'right' }}><Money value={outputTax.sgst} /></td><td style={{ textAlign: 'right' }} className="font-bold"><Money value={outputTax.igst + outputTax.cgst + outputTax.sgst} /></td></tr>
+              <tr><td className="font-medium" style={{ color: '#059669' }}>Less: ITC Claimed</td><td style={{ textAlign: 'right', color: '#059669' }}>-<Money value={itcFromExpenses.igst} /></td><td style={{ textAlign: 'right', color: '#059669' }}>-<Money value={itcFromExpenses.cgst} /></td><td style={{ textAlign: 'right', color: '#059669' }}>-<Money value={itcFromExpenses.sgst} /></td><td style={{ textAlign: 'right', color: '#059669' }}>-<Money value={itcFromExpenses.igst + itcFromExpenses.cgst + itcFromExpenses.sgst} /></td></tr>
             </tbody>
             <tfoot><tr style={{ fontWeight: 'bold', borderTop: '2px solid var(--border)' }}>
               <td>Net Tax Payable</td>
-              <td style={{ textAlign: 'right' }}>{formatCurrency(netTax.igst)}</td><td style={{ textAlign: 'right' }}>{formatCurrency(netTax.cgst)}</td><td style={{ textAlign: 'right' }}>{formatCurrency(netTax.sgst)}</td>
-              <td style={{ textAlign: 'right', color: 'var(--primary)', fontSize: '1.1rem' }}>{formatCurrency(netPayable)}</td>
+              <td style={{ textAlign: 'right' }}><Money value={netTax.igst} /></td><td style={{ textAlign: 'right' }}><Money value={netTax.cgst} /></td><td style={{ textAlign: 'right' }}><Money value={netTax.sgst} /></td>
+              <td style={{ textAlign: 'right', color: 'var(--primary)', fontSize: '1.1rem' }}><Money value={netPayable} /></td>
             </tr></tfoot>
           </table>
         </div>
@@ -104,7 +109,7 @@ export default function GSTR3BTab({ exports, periodFiling, markFiled, grandTotal
 
       <div className="glass-panel" style={{ padding: '1rem 1.25rem', textAlign: 'center' }}>
         <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: '0 0 0.25rem' }}>Net GST Payable</p>
-        <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--primary)', margin: 0 }}>{formatCurrency(netPayable)}</h2>
+        <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--primary)', margin: 0 }}><Money value={netPayable} /></h2>
         <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: '0.25rem 0 0' }}>
           {netPayable === 0 ? 'ITC covers your liability' : 'Pay via Electronic Cash Ledger'}
         </p>

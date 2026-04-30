@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Save, X } from 'lucide-react';
-import { formatCurrency } from '../../utils';
 import { toast } from '../../lib/toast';
+import { PrivateAmount } from '../PrivacyContext';
 
 const EXPENSE_CATEGORIES = [
   'Office Rent', 'Utilities', 'Internet & Phone', 'Software & Tools',
@@ -106,7 +106,7 @@ export default function ExpenseForm({ isOpen, editingId, expense, onSave, onClos
             <label className="form-label">GST % (for ITC)</label>
             <input type="number" className="form-input" value={form.gstPercent}
               onChange={e => handleGSTCalc(e.target.value)} placeholder="18" min="0" max="28" />
-            {form.gstAmount > 0 && <p className="field-hint">GST: {formatCurrency(form.gstAmount)}</p>}
+            {form.gstAmount > 0 && <p className="field-hint">GST: <PrivateAmount amount={form.gstAmount} /></p>}
           </div>
           <div className="form-group">
             <label className="form-label">Vendor Name</label>

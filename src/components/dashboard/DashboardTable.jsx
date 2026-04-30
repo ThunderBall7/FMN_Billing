@@ -1,7 +1,8 @@
 import { Edit3, Copy, FileText, IndianRupee, MessageCircle, Mail, Trash2, X } from 'lucide-react';
 import { STATUS_CONFIG } from './dashboardConfig';
-import { formatCurrency, INVOICE_TYPES } from '../../utils';
+import { INVOICE_TYPES } from '../../utils';
 import { Search } from 'lucide-react';
+import { PrivateAmount, PrivateValue } from '../PrivacyContext';
 
 export default function DashboardTable({ filtered, bills, fyFilter, typeFilter, statusFilter, dateFrom, dateTo, search, hasFilters, fyOptions, loading, onSearch, onFyChange, onTypeChange, onStatusChange, onDateFromChange, onDateToChange, onClearFilters, onNew, onView, onDuplicate, onConvert, onPayment, onShareWhatsApp, onShareEmail, onDelete, showNote }) {
   return (
@@ -148,7 +149,7 @@ export default function DashboardTable({ filtered, bills, fyFilter, typeFilter, 
                           )}
                         </td>
                         <td className="font-bold">
-                          {formatCurrency(bill.totalAmount, billCurrency)}
+                          <PrivateAmount amount={bill.totalAmount} currency={billCurrency} />
                           {billCurrency !== 'INR' && (
                             <span
                               style={{
@@ -167,7 +168,7 @@ export default function DashboardTable({ filtered, bills, fyFilter, typeFilter, 
                         </td>
                         <td className="text-muted">
                           {(bill.paidAmount || 0) > 0
-                            ? formatCurrency(bill.paidAmount, billCurrency)
+                            ? <PrivateAmount amount={bill.paidAmount} currency={billCurrency} />
                             : '-'}
                         </td>
                         <td>
@@ -196,7 +197,7 @@ export default function DashboardTable({ filtered, bills, fyFilter, typeFilter, 
                                 marginTop: 2,
                               }}
                             >
-                              {daysOverdue}d overdue
+                              <PrivateValue value={daysOverdue} />d overdue
                             </span>
                           )}
                         </td>

@@ -1,4 +1,5 @@
 import { AlertTriangle, Send } from 'lucide-react';
+import { PrivateValue } from '../PrivacyContext';
 
 export default function OverdueBanner({ overdueCount, overdueText, onView, onRemindAll }) {
   if (overdueCount === 0) return null;
@@ -12,10 +13,10 @@ export default function OverdueBanner({ overdueCount, overdueText, onView, onRem
       <AlertTriangle size={20} style={{ color: '#dc2626', flexShrink: 0 }} />
       <div style={{ flex: 1 }}>
         <span style={{ fontWeight: 700, color: '#dc2626' }}>
-          {overdueCount} overdue invoice{overdueCount > 1 ? 's' : ''}
+          <PrivateValue value={overdueCount} /> overdue invoice{overdueCount > 1 ? 's' : ''}
         </span>
         <span style={{ color: '#991b1b', marginLeft: 8, fontSize: '0.85rem' }}>
-          - {overdueText} outstanding
+          - <PrivateValue value={overdueText} /> outstanding
         </span>
       </div>
       <button className="btn btn-secondary" style={{ fontSize: '0.75rem', padding: '0.3rem 0.75rem', whiteSpace: 'nowrap' }} onClick={onRemindAll}>

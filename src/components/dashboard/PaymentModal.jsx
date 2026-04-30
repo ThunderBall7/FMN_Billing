@@ -1,4 +1,4 @@
-import { formatCurrency } from '../../utils';
+import { PrivateAmount } from '../PrivacyContext';
 
 export default function PaymentModal({ bill, paymentInput, setPaymentInput, onClose, onRecordPayment }) {
   if (!bill) return null;
@@ -10,9 +10,9 @@ export default function PaymentModal({ bill, paymentInput, setPaymentInput, onCl
       <div className="modal-content" onClick={(event) => event.stopPropagation()}>
         <h3 className="section-title">Record Payment</h3>
         <p className="text-muted" style={{ marginBottom: '1rem', fontSize: '0.85rem' }}>
-          Invoice: <strong>{bill.invoiceNumber}</strong> | Total: <strong>{formatCurrency(bill.totalAmount, bill.currency)}</strong>
-          {(bill.paidAmount || 0) > 0 && <> | Paid: <strong>{formatCurrency(bill.paidAmount, bill.currency)}</strong></>}
-          {' '}| Balance: <strong style={{ color: '#dc2626' }}>{formatCurrency(balance, bill.currency)}</strong>
+          Invoice: <strong>{bill.invoiceNumber}</strong> | Total: <strong><PrivateAmount amount={bill.totalAmount} currency={bill.currency} /></strong>
+          {(bill.paidAmount || 0) > 0 && <> | Paid: <strong><PrivateAmount amount={bill.paidAmount} currency={bill.currency} /></strong></>}
+          {' '}| Balance: <strong style={{ color: '#dc2626' }}><PrivateAmount amount={balance} currency={bill.currency} /></strong>
         </p>
         <div className="grid grid-cols-2 gap-4">
           <div className="form-group">
@@ -46,7 +46,7 @@ export default function PaymentModal({ bill, paymentInput, setPaymentInput, onCl
               {bill.payments.map((payment, index) => (
                 <div key={index} className="payment-row">
                   <span>{new Date(payment.date).toLocaleDateString('en-IN')}</span>
-                  <span className="font-bold">{formatCurrency(payment.amount, bill.currency)}</span>
+                  <span className="font-bold"><PrivateAmount amount={payment.amount} currency={bill.currency} /></span>
                   <span className="text-muted">{payment.mode}</span>
                   {payment.note && <span className="text-muted">{payment.note}</span>}
                 </div>

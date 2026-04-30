@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Wallet, Plus, Download, Search, X, Calendar } from 'lucide-react';
 import { getAllExpenses, saveExpense, deleteExpense } from '../store';
-import { formatCurrency } from '../utils';
 import { InlineLoadingState } from './LoadingSpinner';
 import { toast } from'../lib/toast';
 import { getFinancialYearOptions } from '../lib/periods';
 import ExpenseForm from './expenses/ExpenseForm';
 import ExpenseTable from './expenses/ExpenseTable';
+import { PrivateAmount, PrivateValue } from './PrivacyContext';
 
 const EXPENSE_CATEGORIES = [
   'Office Rent', 'Utilities', 'Internet & Phone', 'Software & Tools',
@@ -131,15 +131,15 @@ export default function ExpenseTracker() {
       <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
         <div className="stat-card">
           <div className="stat-icon stat-icon-purple"><Wallet size={22} /></div>
-          <div><p className="stat-label">Total Expenses</p><h2 className="stat-value stat-value-purple">{formatCurrency(totalAmount)}</h2></div>
+          <div><p className="stat-label">Total Expenses</p><h2 className="stat-value stat-value-purple"><PrivateAmount amount={totalAmount} /></h2></div>
         </div>
         <div className="stat-card">
           <div className="stat-icon stat-icon-green"><Calendar size={22} /></div>
-          <div><p className="stat-label">GST Paid (ITC)</p><h2 className="stat-value stat-value-green">{formatCurrency(totalGST)}</h2></div>
+          <div><p className="stat-label">GST Paid (ITC)</p><h2 className="stat-value stat-value-green"><PrivateAmount amount={totalGST} /></h2></div>
         </div>
         <div className="stat-card">
           <div className="stat-icon stat-icon-blue"><Wallet size={22} /></div>
-          <div><p className="stat-label">Entries</p><h2 className="stat-value">{filtered.length}</h2></div>
+          <div><p className="stat-label">Entries</p><h2 className="stat-value"><PrivateValue value={filtered.length} /></h2></div>
         </div>
       </div>
 

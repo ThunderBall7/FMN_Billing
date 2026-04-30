@@ -42,6 +42,7 @@ import WelcomeGuide from "./components/WelcomeGuide";
 import LoginView from "./components/LoginView";
 import { LoadingPanel } from "./components/LoadingSpinner";
 import ToastContainer from "./components/Toast";
+import { PrivacyProvider, PrivacyToggleButton } from "./components/PrivacyContext";
 
 function App() {
   const [currentView, setCurrentView] = useState(() => {
@@ -324,7 +325,8 @@ function App() {
   }
 
   return (
-    <div className="app-layout">
+    <PrivacyProvider>
+      <div className="app-layout">
       <div className="sidebar">
         <div className="sidebar-brand">
           <div className="sidebar-logo">
@@ -435,6 +437,7 @@ function App() {
               {darkMode ? <Sun size={18} /> : <Moon size={18} />}
               {darkMode ? "Light Mode" : "Dark Mode"}
             </button>
+            <PrivacyToggleButton />
             <button
               className={`nav-btn ${currentView === "settings" ? "nav-btn-active" : ""}`}
               onClick={() => setCurrentView("settings")}
@@ -512,7 +515,8 @@ function App() {
         )}
       </div>
       <ToastContainer />
-    </div>
+      </div>
+    </PrivacyProvider>
   );
 }
 

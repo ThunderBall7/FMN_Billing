@@ -1,5 +1,5 @@
 import { Wallet, Search, X } from 'lucide-react';
-import { formatCurrency } from '../../utils';
+import { PrivateAmount, PrivateValue } from '../PrivacyContext';
 
 
 export default function AgingAnalysis({
@@ -18,19 +18,19 @@ export default function AgingAnalysis({
           <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(5, 1fr)' }}>
             <div className="stat-card">
               <div className="stat-icon stat-icon-blue"><Wallet size={22} /></div>
-              <div><p className="stat-label">Total Outstanding</p><h2 className="stat-value">{formatCurrency(agingByCurrency[cur].total, cur)}</h2></div>
+              <div><p className="stat-label">Total Outstanding</p><h2 className="stat-value"><PrivateAmount amount={agingByCurrency[cur].total} currency={cur} /></h2></div>
             </div>
             <div className="stat-card">
-              <div><p className="stat-label">Current (0-30d)</p><h2 className="stat-value stat-value-green">{formatCurrency(agingByCurrency[cur].current, cur)}</h2></div>
+              <div><p className="stat-label">Current (0-30d)</p><h2 className="stat-value stat-value-green"><PrivateAmount amount={agingByCurrency[cur].current} currency={cur} /></h2></div>
             </div>
             <div className="stat-card">
-              <div><p className="stat-label">31-60 days</p><h2 className="stat-value stat-value-amber">{formatCurrency(agingByCurrency[cur]['31to60'], cur)}</h2></div>
+              <div><p className="stat-label">31-60 days</p><h2 className="stat-value stat-value-amber"><PrivateAmount amount={agingByCurrency[cur]['31to60']} currency={cur} /></h2></div>
             </div>
             <div className="stat-card">
-              <div><p className="stat-label">61-90 days</p><h2 className="stat-value stat-value-purple">{formatCurrency(agingByCurrency[cur]['61to90'], cur)}</h2></div>
+              <div><p className="stat-label">61-90 days</p><h2 className="stat-value stat-value-purple"><PrivateAmount amount={agingByCurrency[cur]['61to90']} currency={cur} /></h2></div>
             </div>
             <div className="stat-card">
-              <div><p className="stat-label">90+ days</p><h2 className="stat-value" style={{ color: '#dc2626' }}>{formatCurrency(agingByCurrency[cur]['90plus'], cur)}</h2></div>
+              <div><p className="stat-label">90+ days</p><h2 className="stat-value" style={{ color: '#dc2626' }}><PrivateAmount amount={agingByCurrency[cur]['90plus']} currency={cur} /></h2></div>
             </div>
           </div>
         </div>
@@ -39,7 +39,7 @@ export default function AgingAnalysis({
         <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(5, 1fr)', marginBottom: '1.5rem' }}>
           {['Total Outstanding', 'Current (0-30d)', '31-60 days', '61-90 days', '90+ days'].map(label => (
             <div key={label} className="stat-card">
-              <div><p className="stat-label">{label}</p><h2 className="stat-value">{formatCurrency(0)}</h2></div>
+              <div><p className="stat-label">{label}</p><h2 className="stat-value"><PrivateAmount amount={0} /></h2></div>
             </div>
           ))}
         </div>
@@ -85,13 +85,13 @@ export default function AgingAnalysis({
                     <td><span className="invoice-badge">{r.invoiceNumber}</span></td>
                     <td className="text-muted">{r.invoiceDate ? new Date(r.invoiceDate).toLocaleDateString('en-IN') : '-'}</td>
                     <td className="text-muted">{r.dueDate ? new Date(r.dueDate).toLocaleDateString('en-IN') : '-'}</td>
-                    <td style={{ textAlign: 'right', fontWeight: 600 }}>{formatCurrency(r.totalAmount, r.currency)}</td>
-                    <td style={{ textAlign: 'right', color: '#059669', fontWeight: 600 }}>{formatCurrency(r.paidAmount, r.currency)}</td>
+                    <td style={{ textAlign: 'right', fontWeight: 600 }}><PrivateAmount amount={r.totalAmount} currency={r.currency} /></td>
+                    <td style={{ textAlign: 'right', color: '#059669', fontWeight: 600 }}><PrivateAmount amount={r.paidAmount} currency={r.currency} /></td>
                     <td style={{ textAlign: 'right', fontWeight: 700, color: r.daysOverdue > 90 ? '#dc2626' : r.daysOverdue > 30 ? '#f59e0b' : 'var(--text-secondary)' }}>
-                      {formatCurrency(r.outstanding, r.currency)}
+                      <PrivateAmount amount={r.outstanding} currency={r.currency} />
                     </td>
                     <td style={{ textAlign: 'right', fontWeight: 600, color: r.daysOverdue > 90 ? '#dc2626' : r.daysOverdue > 30 ? '#f59e0b' : '#059669' }}>
-                      {r.daysOverdue > 0 ? `${r.daysOverdue}d` : 'Current'}
+                      {r.daysOverdue > 0 ? <><PrivateValue value={r.daysOverdue} />d</> : 'Current'}
                     </td>
                   </tr>
                 ))}

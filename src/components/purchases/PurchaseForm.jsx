@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Plus, Trash2, Save, X } from 'lucide-react';
-import { formatCurrency } from '../../utils';
+import { PrivateAmount } from '../PrivacyContext';
 
 const PAYMENT_STATUSES = ['Unpaid', 'Paid', 'Partial'];
 const emptyItem = { name: '', hsn: '', quantity: 1, rate: 0, taxPercent: 18 };
@@ -177,9 +177,9 @@ export default function PurchaseForm({ isOpen, editingId, purchase, onSave, onCl
           onClick={addItem}><Plus size={14} /> Add Item</button>
 
         <div style={{ marginTop: '1rem', padding: '0.75rem', background: 'var(--bg-secondary)', borderRadius: 8, display: 'flex', gap: '1.5rem', fontSize: '0.85rem' }}>
-          <span>Taxable: <strong>{formatCurrency(formTotals.taxable)}</strong></span>
-          <span>Tax: <strong>{formatCurrency(formTotals.tax)}</strong></span>
-          <span>Total: <strong>{formatCurrency(formTotals.total)}</strong></span>
+          <span>Taxable: <strong><PrivateAmount amount={formTotals.taxable} /></strong></span>
+          <span>Tax: <strong><PrivateAmount amount={formTotals.tax} /></strong></span>
+          <span>Total: <strong><PrivateAmount amount={formTotals.total} /></strong></span>
         </div>
 
         <div className="flex gap-2 justify-end mt-4">

@@ -1,6 +1,7 @@
 import { Play, Pause, Edit3, Trash2, RefreshCw } from 'lucide-react';
-import { formatCurrency, INVOICE_TYPES } from '../../utils';
+import { INVOICE_TYPES } from '../../utils';
 import { InlineLoadingState } from '../LoadingSpinner';
+import { PrivateAmount } from '../PrivacyContext';
 
 const FREQUENCIES = [
   { value: 'weekly', label: 'Weekly' },
@@ -48,7 +49,7 @@ export default function RecurringTable({ templates, loading, onEdit, onDelete, o
                     <td className="font-medium">{tpl.clientName}</td>
                     <td><span className="type-badge">{FREQUENCIES.find(f => f.value === tpl.frequency)?.label}</span></td>
                     <td className="text-muted">{INVOICE_TYPES[tpl.invoiceType || 'tax-invoice']?.label}</td>
-                    <td style={{ textAlign: 'right' }} className="font-bold">{formatCurrency(total)}</td>
+                    <td style={{ textAlign: 'right' }} className="font-bold"><PrivateAmount amount={total} /></td>
                     <td className="text-muted">{tpl.nextDate ? new Date(tpl.nextDate).toLocaleDateString('en-IN') : '-'}</td>
                     <td>
                       <span style={{

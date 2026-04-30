@@ -5,6 +5,7 @@ import { formatCurrency, INVOICE_TYPES } from '../utils';
 import { InlineLoadingState } from './LoadingSpinner';
 import { toast } from '../lib/toast';
 import ClientModal from './ClientModal';
+import { PrivateAmount, PrivateValue } from './PrivacyContext';
 
 const STATUS_COLORS = {
   unpaid: { label: 'Unpaid', color: '#f59e0b', bg: '#fffbeb' },
@@ -261,7 +262,7 @@ export default function ClientsView({ onEdit, onDuplicate, onNew }) {
                     <div>
                       <h3 className="client-card-name">{clientName}</h3>
                       <p className="client-card-meta">
-                        {stats.count} invoice{stats.count !== 1 ? 's' : ''}
+                        <PrivateValue value={stats.count} /> invoice{stats.count !== 1 ? 's' : ''}
                         {savedClient?.state ? ` | ${savedClient.state}` : ''}
                         {savedClient?.gstin ? ` | ${savedClient.gstin}` : ''}
                       </p>
@@ -270,16 +271,16 @@ export default function ClientsView({ onEdit, onDuplicate, onNew }) {
                   <div className="client-card-stats">
                     <div className="client-stat">
                       <span className="client-stat-label">Total</span>
-                      <span className="client-stat-value">{formatCurrency(stats.total)}</span>
+                      <span className="client-stat-value"><PrivateAmount amount={stats.total} /></span>
                     </div>
                     <div className="client-stat">
                       <span className="client-stat-label">Paid</span>
-                      <span className="client-stat-value" style={{ color: '#059669' }}>{formatCurrency(stats.paid)}</span>
+                      <span className="client-stat-value" style={{ color: '#059669' }}><PrivateAmount amount={stats.paid} /></span>
                     </div>
                     <div className="client-stat">
                       <span className="client-stat-label">Outstanding</span>
                       <span className="client-stat-value" style={{ color: stats.unpaid > 0 ? '#dc2626' : '#059669' }}>
-                        {formatCurrency(stats.unpaid)}
+                        <PrivateAmount amount={stats.unpaid} />
                       </span>
                     </div>
                     <div style={{ marginLeft: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
@@ -298,7 +299,7 @@ export default function ClientsView({ onEdit, onDuplicate, onNew }) {
                           <span>{[savedClient.address, savedClient.city, savedClient.pin].filter(Boolean).join(', ')}</span>
                         )}
                         {savedClient.email && <span>{savedClient.email}</span>}
-                        {savedClient.phone && <span>{savedClient.phone}</span>}
+                        {savedClient.phone && <span><PrivateValue value={savedClient.phone} /></span>}
                       </div>
                     )}
                     {clientBills.length === 0 ? (
@@ -331,7 +332,7 @@ export default function ClientsView({ onEdit, onDuplicate, onNew }) {
                                   <td className="text-muted">{new Date(bill.invoiceDate).toLocaleDateString('en-IN')}</td>
                                   <td><span className="invoice-badge">{bill.invoiceNumber}</span></td>
                                   <td><span className="type-badge">{(INVOICE_TYPES[bill.invoiceType || 'tax-invoice'])?.label}</span></td>
-                                  <td className="font-bold" style={{ textAlign: 'right' }}>{formatCurrency(bill.totalAmount)}</td>
+                                  <td className="font-bold" style={{ textAlign: 'right' }}><PrivateAmount amount={bill.totalAmount} /></td>
                                   <td>
                                     <select className="status-select" value={isOverdue && status !== 'overdue' ? 'overdue' : status}
                                       style={{ background: sc.bg, color: sc.color, borderColor: sc.color + '44', fontSize: '0.75rem', padding: '0.2rem 0.4rem', borderRadius: '4px', border: '1px solid', cursor: 'pointer', fontWeight: 600 }}

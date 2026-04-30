@@ -1,9 +1,9 @@
 import { CheckCircle, Download, Upload } from 'lucide-react';
-import { formatCurrency } from '../../utils';
 import { getTaxableAmount } from './gstReturnUtils';
+import { PrivateAmount, PrivateValue } from '../PrivacyContext';
 
 function MoneyCell({ value, bold = false }) {
-  return <td style={{ textAlign: 'right' }} className={bold ? 'font-bold' : undefined}>{formatCurrency(value)}</td>;
+  return <td style={{ textAlign: 'right' }} className={bold ? 'font-bold' : undefined}><PrivateAmount amount={value} /></td>;
 }
 
 export default function GSTR1Tab({
@@ -41,7 +41,7 @@ export default function GSTR1Tab({
       <div className="glass-panel mb-4">
         <div className="table-header">
           <h3>B2B Sales - Table 4A</h3>
-          <span className="text-muted" style={{ fontSize: '0.82rem' }}>{b2bRows.length} invoice{b2bRows.length !== 1 ? 's' : ''}</span>
+          <span className="text-muted" style={{ fontSize: '0.82rem' }}><PrivateValue value={b2bRows.length} /> invoice{b2bRows.length !== 1 ? 's' : ''}</span>
         </div>
         {b2bRows.length === 0 ? (
           <p style={{ padding: '1rem 1.25rem', margin: 0, fontSize: '0.85rem', color: 'var(--text-muted)' }}>No B2B invoices for this period.</p>
@@ -88,7 +88,7 @@ export default function GSTR1Tab({
         <div className="glass-panel mb-4">
           <div className="table-header">
             <h3>Credit/Debit Notes - Table 9B</h3>
-            <span className="text-muted" style={{ fontSize: '0.85rem' }}>{creditNotes.length} note{creditNotes.length !== 1 ? 's' : ''}</span>
+            <span className="text-muted" style={{ fontSize: '0.85rem' }}><PrivateValue value={creditNotes.length} /> note{creditNotes.length !== 1 ? 's' : ''}</span>
           </div>
           <div className="table-scroll">
             <table className="data-table">
@@ -118,8 +118,8 @@ export default function GSTR1Tab({
         <div className="table-header">
           <h3>B2C Sales - Table 7</h3>
           <span className="text-muted" style={{ fontSize: '0.82rem' }}>
-            {b2cBills.length} invoice{b2cBills.length !== 1 ? 's' : ''}
-            {b2cLarge.length > 0 && <> ({b2cLarge.length} B2C Large)</>}
+            <PrivateValue value={b2cBills.length} /> invoice{b2cBills.length !== 1 ? 's' : ''}
+            {b2cLarge.length > 0 && <> (<PrivateValue value={b2cLarge.length} /> B2C Large)</>}
           </span>
         </div>
         {b2cRates.length === 0 ? (
@@ -159,7 +159,7 @@ export default function GSTR1Tab({
       <div className="glass-panel mb-4">
         <div className="table-header">
           <h3>HSN Summary - Table 12</h3>
-          <span className="text-muted" style={{ fontSize: '0.82rem' }}>{hsnRows.length} code{hsnRows.length !== 1 ? 's' : ''}</span>
+          <span className="text-muted" style={{ fontSize: '0.82rem' }}><PrivateValue value={hsnRows.length} /> code{hsnRows.length !== 1 ? 's' : ''}</span>
         </div>
         {hsnRows.length === 0 ? (
           <p style={{ padding: '1rem 1.25rem', margin: 0, fontSize: '0.85rem', color: 'var(--text-muted)' }}>No items found.</p>
@@ -172,7 +172,7 @@ export default function GSTR1Tab({
                   <tr key={index}>
                     <td><span className="invoice-badge">{row.hsn}</span></td>
                     <td className="font-medium">{row.description}</td>
-                    <td style={{ textAlign: 'right' }}>{row.quantity}</td>
+                    <td style={{ textAlign: 'right' }}><PrivateValue value={row.quantity} /></td>
                     <MoneyCell value={row.taxable} />
                     <MoneyCell value={row.cgst} />
                     <MoneyCell value={row.sgst} />
@@ -183,7 +183,7 @@ export default function GSTR1Tab({
               </tbody>
               <tfoot><tr style={{ fontWeight: 'bold', borderTop: '2px solid var(--border)' }}>
                 <td colSpan={2}>Total</td>
-                <td style={{ textAlign: 'right' }}>{hsnRows.reduce((sum, row) => sum + row.quantity, 0)}</td>
+                <td style={{ textAlign: 'right' }}><PrivateValue value={hsnRows.reduce((sum, row) => sum + row.quantity, 0)} /></td>
                 <MoneyCell value={hsnRows.reduce((sum, row) => sum + row.taxable, 0)} />
                 <MoneyCell value={hsnRows.reduce((sum, row) => sum + row.cgst, 0)} />
                 <MoneyCell value={hsnRows.reduce((sum, row) => sum + row.sgst, 0)} />
@@ -209,7 +209,7 @@ export default function GSTR1Tab({
                     <td className="font-medium">{row.type}</td>
                     <td className="text-muted">{row.from}</td>
                     <td className="text-muted">{row.to}</td>
-                    <td style={{ textAlign: 'right' }} className="font-bold">{row.total}</td>
+                    <td style={{ textAlign: 'right' }} className="font-bold"><PrivateValue value={row.total} /></td>
                   </tr>
                 ))}
               </tbody>

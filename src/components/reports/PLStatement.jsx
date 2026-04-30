@@ -1,5 +1,5 @@
 import { TrendingUp, TrendingDown, Wallet, BarChart3 } from 'lucide-react';
-import { formatCurrency } from '../../utils';
+import { PrivateAmount, PrivateValue } from '../PrivacyContext';
 
 const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -19,11 +19,11 @@ export default function PLStatement({
       <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(4, 1fr)', marginBottom: '1.5rem' }}>
         <div className="stat-card">
           <div className="stat-icon stat-icon-green"><TrendingUp size={22} /></div>
-          <div><p className="stat-label">Revenue (ex. tax)</p><h2 className="stat-value stat-value-green">{formatCurrency(revenueExTax, currencyFilter)}</h2></div>
+          <div><p className="stat-label">Revenue (ex. tax)</p><h2 className="stat-value stat-value-green"><PrivateAmount amount={revenueExTax} currency={currencyFilter} /></h2></div>
         </div>
         <div className="stat-card">
           <div className="stat-icon stat-icon-purple"><TrendingDown size={22} /></div>
-          <div><p className="stat-label">Expenses (ex. GST)</p><h2 className="stat-value stat-value-purple">{formatCurrency(expenseExGST, currencyFilter)}</h2></div>
+          <div><p className="stat-label">Expenses (ex. GST)</p><h2 className="stat-value stat-value-purple"><PrivateAmount amount={expenseExGST} currency={currencyFilter} /></h2></div>
         </div>
         <div className="stat-card">
           <div className="stat-icon" style={{ background: netProfit >= 0 ? 'var(--success-light)' : 'var(--danger-light)', color: netProfit >= 0 ? 'var(--success)' : 'var(--danger)' }}>
@@ -31,12 +31,12 @@ export default function PLStatement({
           </div>
           <div>
             <p className="stat-label">Net {netProfit >= 0 ? 'Profit' : 'Loss'}</p>
-            <h2 className="stat-value" style={{ color: netProfit >= 0 ? 'var(--success)' : 'var(--danger)' }}>{formatCurrency(Math.abs(netProfit), currencyFilter)}</h2>
+            <h2 className="stat-value" style={{ color: netProfit >= 0 ? 'var(--success)' : 'var(--danger)' }}><PrivateAmount amount={Math.abs(netProfit)} currency={currencyFilter} /></h2>
           </div>
         </div>
         <div className="stat-card">
           <div className="stat-icon stat-icon-blue"><BarChart3 size={22} /></div>
-          <div><p className="stat-label">Margin</p><h2 className="stat-value">{revenueExTax > 0 ? Math.round((netProfit / revenueExTax) * 100) : 0}%</h2></div>
+          <div><p className="stat-label">Margin</p><h2 className="stat-value"><PrivateValue value={revenueExTax > 0 ? Math.round((netProfit / revenueExTax) * 100) : 0} />%</h2></div>
         </div>
       </div>
 
@@ -55,34 +55,34 @@ export default function PLStatement({
             <tbody>
               <tr style={{ borderBottom: '1px solid var(--border)' }}>
                 <td style={{ padding: '0.6rem 0', fontWeight: 500, color: 'var(--text-secondary)' }}>Total Revenue</td>
-                <td style={{ padding: '0.6rem 0', textAlign: 'right', fontWeight: 600 }}>{formatCurrency(totalRevenue, currencyFilter)}</td>
+                <td style={{ padding: '0.6rem 0', textAlign: 'right', fontWeight: 600 }}><PrivateAmount amount={totalRevenue} currency={currencyFilter} /></td>
               </tr>
               <tr style={{ borderBottom: '1px solid var(--border)' }}>
                 <td style={{ padding: '0.6rem 0', fontWeight: 500, color: 'var(--text-secondary)' }}>Less: GST Collected</td>
-                <td style={{ padding: '0.6rem 0', textAlign: 'right', color: '#dc2626' }}>-{formatCurrency(totalTaxCollected, currencyFilter)}</td>
+                <td style={{ padding: '0.6rem 0', textAlign: 'right', color: '#dc2626' }}>-<PrivateAmount amount={totalTaxCollected} currency={currencyFilter} /></td>
               </tr>
               <tr style={{ borderBottom: '2px solid var(--border)' }}>
                 <td style={{ padding: '0.6rem 0', fontWeight: 700 }}>Net Revenue</td>
-                <td style={{ padding: '0.6rem 0', textAlign: 'right', fontWeight: 700 }}>{formatCurrency(revenueExTax, currencyFilter)}</td>
+                <td style={{ padding: '0.6rem 0', textAlign: 'right', fontWeight: 700 }}><PrivateAmount amount={revenueExTax} currency={currencyFilter} /></td>
               </tr>
               <tr style={{ borderBottom: '1px solid var(--border)' }}>
                 <td style={{ padding: '0.6rem 0', fontWeight: 500, color: 'var(--text-secondary)' }}>Total Expenses</td>
-                <td style={{ padding: '0.6rem 0', textAlign: 'right', fontWeight: 600 }}>{formatCurrency(totalExpenseAmount, currencyFilter)}</td>
+                <td style={{ padding: '0.6rem 0', textAlign: 'right', fontWeight: 600 }}><PrivateAmount amount={totalExpenseAmount} currency={currencyFilter} /></td>
               </tr>
               <tr style={{ borderBottom: '1px solid var(--border)' }}>
                 <td style={{ padding: '0.6rem 0', fontWeight: 500, color: 'var(--text-secondary)' }}>Less: GST on Expenses (ITC)</td>
-                <td style={{ padding: '0.6rem 0', textAlign: 'right', color: '#059669' }}>-{formatCurrency(totalExpenseGST, currencyFilter)}</td>
+                <td style={{ padding: '0.6rem 0', textAlign: 'right', color: '#059669' }}>-<PrivateAmount amount={totalExpenseGST} currency={currencyFilter} /></td>
               </tr>
               <tr style={{ borderBottom: '2px solid var(--border)' }}>
                 <td style={{ padding: '0.6rem 0', fontWeight: 700 }}>Net Expenses</td>
-                <td style={{ padding: '0.6rem 0', textAlign: 'right', fontWeight: 700 }}>{formatCurrency(expenseExGST, currencyFilter)}</td>
+                <td style={{ padding: '0.6rem 0', textAlign: 'right', fontWeight: 700 }}><PrivateAmount amount={expenseExGST} currency={currencyFilter} /></td>
               </tr>
               <tr>
                 <td style={{ padding: '1rem 0', fontWeight: 800, fontSize: '1.1rem' }}>
                   Net {netProfit >= 0 ? 'Profit' : 'Loss'}
                 </td>
                 <td style={{ padding: '1rem 0', textAlign: 'right', fontWeight: 800, fontSize: '1.25rem', color: netProfit >= 0 ? '#059669' : '#dc2626' }}>
-                  {formatCurrency(Math.abs(netProfit), currencyFilter)}
+                  <PrivateAmount amount={Math.abs(netProfit)} currency={currencyFilter} />
                 </td>
               </tr>
             </tbody>
@@ -112,10 +112,10 @@ export default function PLStatement({
                   return (
                     <tr key={key}>
                       <td className="font-medium">{MONTHS[parseInt(mo) - 1]} {y}</td>
-                      <td style={{ textAlign: 'right' }}>{formatCurrency(rev, currencyFilter)}</td>
-                      <td style={{ textAlign: 'right' }}>{formatCurrency(exp, currencyFilter)}</td>
+                      <td style={{ textAlign: 'right' }}><PrivateAmount amount={rev} currency={currencyFilter} /></td>
+                      <td style={{ textAlign: 'right' }}><PrivateAmount amount={exp} currency={currencyFilter} /></td>
                       <td style={{ textAlign: 'right', fontWeight: 700, color: pl >= 0 ? '#059669' : '#dc2626' }}>
-                        {formatCurrency(Math.abs(pl), currencyFilter)}
+                        <PrivateAmount amount={Math.abs(pl)} currency={currencyFilter} />
                       </td>
                     </tr>
                   );

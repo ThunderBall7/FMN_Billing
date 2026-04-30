@@ -1,5 +1,5 @@
 import { MessageCircle } from 'lucide-react';
-import { formatCurrency } from '../../utils';
+import { PrivateAmount, PrivateValue } from '../PrivacyContext';
 
 export default function RemindAllModal({ show, overdueBills, getClientPhone, onClose, onSendReminder }) {
   if (!show) return null;
@@ -24,9 +24,9 @@ export default function RemindAllModal({ show, overdueBills, getClientPhone, onC
                     <span className="font-medium">{bill.clientName}</span>
                     <span className="text-muted" style={{ marginLeft: 8, fontSize: '0.8rem' }}>{bill.invoiceNumber}</span>
                     <span style={{ marginLeft: 8, fontWeight: 600, color: '#dc2626', fontSize: '0.85rem' }}>
-                      {formatCurrency(bill.totalAmount - (bill.paidAmount || 0), currency)}
+                      <PrivateAmount amount={bill.totalAmount - (bill.paidAmount || 0)} currency={currency} />
                     </span>
-                    {phone && <span className="text-muted" style={{ marginLeft: 8, fontSize: '0.75rem' }}>{phone}</span>}
+                    {phone && <span className="text-muted" style={{ marginLeft: 8, fontSize: '0.75rem' }}><PrivateValue value={phone} /></span>}
                   </div>
                   <button className="btn btn-primary" style={{ fontSize: '0.75rem', padding: '0.3rem 0.75rem' }} onClick={() => onSendReminder({ ...bill, clientPhone: phone })}>
                     <MessageCircle size={13} /> Remind

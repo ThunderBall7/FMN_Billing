@@ -640,6 +640,26 @@ body {
   box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
 }
 
+.privacy-toggle-visible {
+  color: #bfdbfe;
+  background: rgba(37, 99, 235, 0.12);
+}
+
+.privacy-toggle-visible:hover {
+  color: white;
+  background: rgba(37, 99, 235, 0.2);
+}
+
+.private-value {
+  display: inline-block;
+  min-width: max-content;
+}
+
+.private-value-hidden {
+  letter-spacing: 0.06em;
+  user-select: none;
+}
+
 .nav-btn-bottom {
   margin-top: auto;
 }

@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { ShoppingCart, Plus, Download } from 'lucide-react';
 import { getAllPurchases, savePurchase, deletePurchase } from '../store';
-import { formatCurrency } from '../utils';
 import { toast } from'../lib/toast';
 import { getFinancialYearOptions } from '../lib/periods';
 import PurchaseForm from './purchases/PurchaseForm';
 import PurchaseTable from './purchases/PurchaseTable';
+import { PrivateAmount, PrivateValue } from './PrivacyContext';
 
 function calcItemTax(item) {
   const amount = (item.quantity || 0) * (item.rate || 0);
@@ -138,15 +138,15 @@ export default function PurchaseBills() {
       <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
         <div className="stat-card">
           <div className="stat-icon stat-icon-purple"><ShoppingCart size={22} /></div>
-          <div><p className="stat-label">Total Purchases</p><h2 className="stat-value stat-value-purple">{formatCurrency(totalStats.total)}</h2></div>
+          <div><p className="stat-label">Total Purchases</p><h2 className="stat-value stat-value-purple"><PrivateAmount amount={totalStats.total} /></h2></div>
         </div>
         <div className="stat-card">
           <div className="stat-icon stat-icon-green"><ShoppingCart size={22} /></div>
-          <div><p className="stat-label">GST (ITC Eligible)</p><h2 className="stat-value stat-value-green">{formatCurrency(totalStats.tax)}</h2></div>
+          <div><p className="stat-label">GST (ITC Eligible)</p><h2 className="stat-value stat-value-green"><PrivateAmount amount={totalStats.tax} /></h2></div>
         </div>
         <div className="stat-card">
           <div className="stat-icon stat-icon-blue"><ShoppingCart size={22} /></div>
-          <div><p className="stat-label">Entries</p><h2 className="stat-value">{filtered.length}</h2></div>
+          <div><p className="stat-label">Entries</p><h2 className="stat-value"><PrivateValue value={filtered.length} /></h2></div>
         </div>
       </div>
 

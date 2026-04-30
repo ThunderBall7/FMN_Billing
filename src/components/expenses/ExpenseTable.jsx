@@ -1,5 +1,5 @@
 import { Edit3, Trash2, Search, X, Wallet } from 'lucide-react';
-import { formatCurrency } from '../../utils';
+import { PrivateAmount } from '../PrivacyContext';
 
 export default function ExpenseTable({ filtered, expenses, search, categoryFilter, onSearch, onCategoryChange, onEdit, onDelete, EXPENSE_CATEGORIES }) {
   return (
@@ -32,8 +32,8 @@ export default function ExpenseTable({ filtered, expenses, search, categoryFilte
                   <td className="font-medium">{exp.description}</td>
                   <td><span className="type-badge">{exp.category}</span></td>
                   <td className="text-muted">{exp.vendorName || '-'}</td>
-                  <td style={{ textAlign: 'right' }} className="font-bold">{formatCurrency(exp.amount)}</td>
-                  <td style={{ textAlign: 'right' }} className="text-muted">{exp.gstAmount ? formatCurrency(exp.gstAmount) : '-'}</td>
+                  <td style={{ textAlign: 'right' }} className="font-bold"><PrivateAmount amount={exp.amount} /></td>
+                  <td style={{ textAlign: 'right' }} className="text-muted">{exp.gstAmount ? <PrivateAmount amount={exp.gstAmount} /> : '-'}</td>
                   <td className="text-muted">{exp.paymentMode}</td>
                   <td>
                     <div className="table-actions">

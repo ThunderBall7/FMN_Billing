@@ -1,5 +1,5 @@
 import { Clock, IndianRupee, Receipt, TrendingUp } from 'lucide-react';
-import { formatCurrency } from '../../utils';
+import { PrivateAmount, PrivateValue } from '../PrivacyContext';
 
 function CurrencyValues({ values, field, className = '' }) {
   const entries = Object.entries(values);
@@ -7,7 +7,7 @@ function CurrencyValues({ values, field, className = '' }) {
 
   return entries.map(([currency, value]) => (
     <div key={currency} className={`stat-value ${className}`} style={{ fontSize: entries.length > 1 ? '1.1rem' : undefined }}>
-      {formatCurrency(value[field], currency)}
+      <PrivateAmount amount={value[field]} currency={currency} />
     </div>
   ));
 }
@@ -38,7 +38,7 @@ export default function DashboardStats({ stats }) {
       </div>
       <div className="stat-card">
         <div className="stat-icon stat-icon-purple"><Receipt size={22} /></div>
-        <div><p className="stat-label">Invoices</p><h2 className="stat-value stat-value-purple">{stats.count}</h2></div>
+        <div><p className="stat-label">Invoices</p><h2 className="stat-value stat-value-purple"><PrivateValue value={stats.count} /></h2></div>
       </div>
     </div>
   );

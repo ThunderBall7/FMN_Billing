@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { ShoppingCart, Edit3, Trash2, Search, X } from 'lucide-react';
-import { formatCurrency } from '../../utils';
 import { InlineLoadingState } from '../LoadingSpinner';
 import { getFinancialYearOptions } from '../../lib/periods';
+import { PrivateAmount } from '../PrivacyContext';
 
 function calcItemTax(item) {
   const amount = (item.quantity || 0) * (item.rate || 0);
@@ -85,9 +85,9 @@ export default function PurchaseTable({ filtered, loading, onEdit, onDelete }) {
                     <td className="font-medium">{p.supplierName}</td>
                     <td className="text-muted" style={{ fontSize: '0.78rem' }}>{p.supplierGstin || '-'}</td>
                     <td><span className="invoice-badge">{p.invoiceNumber}</span></td>
-                    <td style={{ textAlign: 'right' }}>{formatCurrency(t.taxable)}</td>
-                    <td style={{ textAlign: 'right' }} className="text-muted">{formatCurrency(t.tax)}</td>
-                    <td style={{ textAlign: 'right' }} className="font-bold">{formatCurrency(t.total)}</td>
+                    <td style={{ textAlign: 'right' }}><PrivateAmount amount={t.taxable} /></td>
+                    <td style={{ textAlign: 'right' }} className="text-muted"><PrivateAmount amount={t.tax} /></td>
+                    <td style={{ textAlign: 'right' }} className="font-bold"><PrivateAmount amount={t.total} /></td>
                     <td>
                       <span style={{
                         padding: '0.15rem 0.5rem', borderRadius: 4, fontSize: '0.75rem', fontWeight: 600,
@@ -108,9 +108,9 @@ export default function PurchaseTable({ filtered, loading, onEdit, onDelete }) {
             <tfoot>
               <tr style={{ fontWeight: 'bold', borderTop: '2px solid var(--border)' }}>
                 <td colSpan={4}>Total</td>
-                <td style={{ textAlign: 'right' }}>{formatCurrency(totalStats.taxable)}</td>
-                <td style={{ textAlign: 'right' }}>{formatCurrency(totalStats.tax)}</td>
-                <td style={{ textAlign: 'right' }}>{formatCurrency(totalStats.total)}</td>
+                <td style={{ textAlign: 'right' }}><PrivateAmount amount={totalStats.taxable} /></td>
+                <td style={{ textAlign: 'right' }}><PrivateAmount amount={totalStats.tax} /></td>
+                <td style={{ textAlign: 'right' }}><PrivateAmount amount={totalStats.total} /></td>
                 <td colSpan={2}></td>
               </tr>
             </tfoot>
