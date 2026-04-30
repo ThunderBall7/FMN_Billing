@@ -72,14 +72,12 @@ function App() {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const profileMenuRef = useRef(null);
 
-  const authEnabled = isFirebaseAuthConfigured();
+  const authConfigured = isFirebaseAuthConfigured();
   const [authUser, setAuthUser] = useState(null);
   const [authChecked, setAuthChecked] = useState(false);
 
-  const authReady = !authEnabled || authChecked;
-
   useEffect(() => {
-    if (!authEnabled) {
+    if (!authConfigured) {
       return;
     }
 
@@ -93,10 +91,10 @@ function App() {
     });
 
     return () => unsubscribe();
-  }, [authEnabled]);
+  }, [authConfigured]);
+
   useEffect(() => {
-    if (!authReady) return;
-    if (authEnabled && !authUser) return;
+    if (!authConfigured || !authChecked || !authUser) return;
     let cancelled = false;
 
     const checkServer = async () => {
@@ -135,7 +133,7 @@ function App() {
       cancelled = true;
       if (retryTimer.current) clearInterval(retryTimer.current);
     };
-  }, [authReady, authEnabled, authUser]);
+  }, [authConfigured, authChecked, authUser]);
 
   // Capture PWA install prompt
   useEffect(() => {
@@ -261,7 +259,29 @@ function App() {
     { id: "filing", icon: BookOpen, label: "GST Returns" },
   ];
 
-  if (!authReady) {
+  if (!authConfigured) {
+    return (
+      <>
+        <div className="auth-overlay">
+          <div className="auth-card">
+            <div className="auth-brand">
+              <div className="auth-logo"><FileText size={20} /></div>
+              <div>
+                <h2>Authentication Required</h2>
+                <p>Auth must be configured before accessing workspace</p>
+              </div>
+            </div>
+            <p className="auth-error" style={{ marginBottom: 0 }}>
+              Please contact admin @ kumarmanish204050@gmail.com.
+            </p>
+          </div>
+        </div>
+        <ToastContainer />
+      </>
+    );
+  }
+
+  if (!authChecked) {
     return (
       <div className="server-down-overlay">
         <LoadingPanel
@@ -272,7 +292,7 @@ function App() {
     );
   }
 
-  if (authEnabled && !authUser) {
+  if (!authUser) {
     return (
       <>
         <LoginView />
@@ -420,15 +440,13 @@ function App() {
               gap: "0.25rem",
             }}
           >
-            {authEnabled && (
-              <button
-                className="nav-btn"
-                onClick={() => signOutUser()}
-                title={authUser?.email || "Sign out"}
-              >
-                <LogOut size={18} /> Sign Out
-              </button>
-            )}
+            <button
+              className="nav-btn"
+              onClick={() => signOutUser()}
+              title={authUser?.email || "Sign out"}
+            >
+              <LogOut size={18} /> Sign Out
+            </button>
             <button
               className="nav-btn"
               onClick={() => setDarkMode(!darkMode)}
