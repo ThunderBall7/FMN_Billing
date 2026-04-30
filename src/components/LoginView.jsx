@@ -28,8 +28,8 @@ export default function LoginView() {
         <div className="auth-brand">
           <div className="auth-logo"><FileText size={20} /></div>
           <div>
-            <h2>fmnBilling</h2>
-            <p>Sign in with Firebase Auth</p>
+            <h2>Foster Media Network - Billing</h2>
+            <p>Sign in to your account</p>
           </div>
         </div>
         <div className="form-group">

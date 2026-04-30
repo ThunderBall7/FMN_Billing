@@ -3,7 +3,7 @@ import { Users, Search, FileText, ChevronDown, ChevronUp, Trash2, X, MessageCirc
 import { getAllClients, getAllBills, deleteClient, saveClient, deleteBill, saveBill } from '../store';
 import { formatCurrency, INVOICE_TYPES } from '../utils';
 import { InlineLoadingState } from './LoadingSpinner';
-import { toast } from './Toast';
+import { toast } from '../lib/toast';
 import ClientModal from './ClientModal';
 
 const STATUS_COLORS = {

@@ -55,8 +55,35 @@ export function listenToAuthState(callback) {
 
 export async function signInWithEmailPassword(email, password) {
   const authInstance = ensureAuth();
-  if (!authInstance) throw new Error('Firebase Auth is not configured in .env');
-  return signInWithEmailAndPassword(authInstance, email, password);
+  if (!authInstance) throw new Error('Auth is not configured');
+
+  try {
+    return await signInWithEmailAndPassword(authInstance, email, password);
+  } catch (error) {
+    const code = error.code;
+
+    let message = 'Login failed. Please try again.';
+
+    switch (code) {
+      case 'auth/user-not-found':
+        message = 'No account found with this email';
+        break;
+      case 'auth/wrong-password':
+        message = 'Incorrect password';
+        break;
+      case 'auth/invalid-email':
+        message = 'Invalid email address';
+        break;
+      case 'auth/invalid-credential':
+        message = 'Invalid email or password';
+        break;
+      case 'auth/too-many-requests':
+        message = 'Too many attempts. Try again later';
+        break;
+    }
+
+    throw new Error(message);
+  }
 }
 
 export async function signOutUser() {

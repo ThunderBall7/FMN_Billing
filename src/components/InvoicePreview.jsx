@@ -60,17 +60,18 @@ const InvoicePreview = React.forwardRef(({ profile, client, details, items, tota
 
   const [qrDataUrl, setQrDataUrl] = useState('');
 
-  // Generate UPI QR code
+  const shouldShowQR =
+  showUPI &&
+  profile?.upiId &&
+  totals.total &&
+  currencySymbol === 'INR';
   useEffect(() => {
-    if (!showUPI || !profile?.upiId || !totals.total || currencySymbol !== 'INR') {
-      setQrDataUrl('');
-      return;
-    }
+    if (!shouldShowQR) return;
     const upiUrl = `upi://pay?pa=${encodeURIComponent(profile.upiId)}&pn=${encodeURIComponent(profile.businessName || '')}&am=${totals.total.toFixed(2)}&cu=INR&tn=${encodeURIComponent(`Payment for ${details?.invoiceNumber || 'Invoice'}`)}`;
     QRCode.toDataURL(upiUrl, { width: 120, margin: 1, errorCorrectionLevel: 'M' })
       .then(setQrDataUrl)
       .catch(() => setQrDataUrl(''));
-  }, [showUPI, profile?.upiId, profile?.businessName, totals.total, details?.invoiceNumber, currencySymbol]);
+  }, [shouldShowQR, profile?.upiId, profile?.businessName, totals.total, details?.invoiceNumber]);
 
   const accentColors = {
     'tax-invoice': '#1e40af',
@@ -81,10 +82,8 @@ const InvoicePreview = React.forwardRef(({ profile, client, details, items, tota
   const accent = options.accentColor || accentColors[invoiceType] || accentColors['tax-invoice'];
   const pdfStyle = options.pdfStyle || 'classic';
 
-  // Check if any item has discount
   const hasAnyDiscount = showDiscount && items.some(item => (item.discount || 0) > 0);
 
-  // Header renderers per style
   const renderModernHeader = () => (
     <>
       <div style={{ background: accent, padding: '1.5rem 2rem', color: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -330,7 +329,7 @@ const InvoicePreview = React.forwardRef(({ profile, client, details, items, tota
             </>
           )}
           {/* UPI QR Code */}
-          {qrDataUrl && (
+          {shouldShowQR && qrDataUrl && (
             <div style={{ marginTop: '1.25rem' }}>
               <h4 className="inv-section-label">SCAN TO PAY (UPI)</h4>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>

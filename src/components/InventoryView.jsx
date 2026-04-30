@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Package, Search, Plus, Edit3, Trash2, X, Save, Upload } from 'lucide-react';
 import { getAllProducts, saveProduct, deleteProduct } from '../store';
 import { InlineLoadingState } from './LoadingSpinner';
-import { toast } from './Toast';
+import { toast } from'../lib/toast';
 
 const UNITS = ['Nos', 'Hrs', 'Kg', 'Ltr', 'Mtr', 'Sq.ft', 'Box', 'Pair', 'Set', 'Pcs'];
 
@@ -187,7 +187,6 @@ export default function InventoryView() {
         </div>
       </div>
 
-      {/* Add/Edit Modal */}
       {showForm && (
         <div className="modal-overlay" onClick={closeForm}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>
@@ -241,7 +240,6 @@ export default function InventoryView() {
         </div>
       )}
 
-      {/* Product Table */}
       <div className="glass-panel">
         <div className="table-header"><h3>Products & Services</h3></div>
         {loading ? (

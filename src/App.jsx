@@ -1,36 +1,63 @@
-import { useState, useEffect, useRef } from 'react';
-import { Home, FileText, Settings, Plus, Users, Package, BarChart3, Wallet, RefreshCw, Receipt, BookOpen, Moon, Sun, Download, X, ShoppingCart, ChevronDown, Building2, Pencil, LogOut } from 'lucide-react';
-import { getAllProfiles, getProfile, saveProfile } from './store';
-import { isFirebaseAuthConfigured, listenToAuthState, signOutUser } from './services/firebaseAuth';
-import Dashboard from './components/Dashboard';
-import InvoiceGenerator from './components/InvoiceGenerator';
-import SettingsView from './components/SettingsView';
-import ClientsView from './components/ClientsView';
-import InventoryView from './components/InventoryView';
-import ReportsView from './components/ReportsView';
-import ExpenseTracker from './components/ExpenseTracker';
-import RecurringInvoices from './components/RecurringInvoices';
-import ReceiptVoucher from './components/ReceiptVoucher';
-import GSTReturns from './components/GSTReturns';
-import PurchaseBills from './components/PurchaseBills';
-import WelcomeGuide from './components/WelcomeGuide';
-import LoginView from './components/LoginView';
-import { LoadingPanel } from './components/LoadingSpinner';
-import ToastContainer from './components/Toast';
+import { useState, useEffect, useRef } from "react";
+import {
+  Home,
+  FileText,
+  Settings,
+  Plus,
+  Users,
+  Package,
+  BarChart3,
+  Wallet,
+  RefreshCw,
+  Receipt,
+  BookOpen,
+  Moon,
+  Sun,
+  Download,
+  X,
+  ShoppingCart,
+  ChevronDown,
+  Building2,
+  Pencil,
+  LogOut,
+} from "lucide-react";
+import { getAllProfiles, getProfile, saveProfile } from "./store";
+import {
+  isFirebaseAuthConfigured,
+  listenToAuthState,
+  signOutUser,
+} from "./services/firebaseAuth";
+import Dashboard from "./components/Dashboard";
+import InvoiceGenerator from "./components/InvoiceGenerator";
+import SettingsView from "./components/SettingsView";
+import ClientsView from "./components/ClientsView";
+import InventoryView from "./components/InventoryView";
+import ReportsView from "./components/ReportsView";
+import ExpenseTracker from "./components/ExpenseTracker";
+import RecurringInvoices from "./components/RecurringInvoices";
+import ReceiptVoucher from "./components/ReceiptVoucher";
+import GSTReturns from "./components/GSTReturns";
+import PurchaseBills from "./components/PurchaseBills";
+import WelcomeGuide from "./components/WelcomeGuide";
+import LoginView from "./components/LoginView";
+import { LoadingPanel } from "./components/LoadingSpinner";
+import ToastContainer from "./components/Toast";
 
 function App() {
   const [currentView, setCurrentView] = useState(() => {
-    return sessionStorage.getItem('gst_currentView') || 'dashboard';
+    return sessionStorage.getItem("gst_currentView") || "dashboard";
   });
   const [profile, setProfile] = useState(null);
   const [editingBill, setEditingBill] = useState(() => {
     try {
-      const saved = sessionStorage.getItem('gst_editingBill');
+      const saved = sessionStorage.getItem("gst_editingBill");
       return saved ? JSON.parse(saved) : null;
-    } catch { return null; }
+    } catch {
+      return null;
+    }
   });
   const [darkMode, setDarkMode] = useState(() => {
-    return localStorage.getItem('fmnBilling_theme') === 'dark';
+    return localStorage.getItem("fmnBilling_theme") === "dark";
   });
   const [showWelcome, setShowWelcome] = useState(false);
   const [showInstallBanner, setShowInstallBanner] = useState(false);
@@ -38,33 +65,34 @@ function App() {
   const deferredPrompt = useRef(null);
   const retryTimer = useRef(null);
 
-  const [serverStatus, setServerStatus] = useState('checking'); // 'checking' | 'online' | 'offline'
-  const [authReady, setAuthReady] = useState(false);
-  const [authEnabled, setAuthEnabled] = useState(false);
-  const [authUser, setAuthUser] = useState(null);
+  const [serverStatus, setServerStatus] = useState("checking");
   const profileLoaded = useRef(false);
   const [allProfiles, setAllProfiles] = useState([]);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const profileMenuRef = useRef(null);
 
+  const authEnabled = isFirebaseAuthConfigured();
+  const [authUser, setAuthUser] = useState(null);
+  const [authChecked, setAuthChecked] = useState(false);
+
+  const authReady = !authEnabled || authChecked;
+
   useEffect(() => {
-    if (!isFirebaseAuthConfigured()) {
-      setAuthEnabled(false);
-      setAuthReady(true);
+    if (!authEnabled) {
       return;
     }
-    setAuthEnabled(true);
+
     const unsubscribe = listenToAuthState((user) => {
       setAuthUser(user);
-      setAuthReady(true);
+      setAuthChecked(true);
+
       if (!user) {
         profileLoaded.current = false;
       }
     });
-    return () => unsubscribe();
-  }, []);
 
-  // Check Firebase-backed app storage.
+    return () => unsubscribe();
+  }, [authEnabled]);
   useEffect(() => {
     if (!authReady) return;
     if (authEnabled && !authUser) return;
@@ -75,22 +103,25 @@ function App() {
         const p = await getProfile();
         if (cancelled) return;
         setServerDown(false);
-        setServerStatus('online');
+        setServerStatus("online");
         if (!profileLoaded.current) {
           profileLoaded.current = true;
           setProfile(p);
-          if (!p.businessName && !localStorage.getItem('fmnBilling_onboarded')) {
+          if (
+            !p.businessName &&
+            !localStorage.getItem("fmnBilling_onboarded")
+          ) {
             setShowWelcome(true);
           }
         }
       } catch {
         if (!cancelled) {
           setServerDown(false);
-          setServerStatus('offline');
+          setServerStatus("offline");
           if (!profileLoaded.current) {
             profileLoaded.current = true;
             setProfile({});
-            setCurrentView('settings');
+            setCurrentView("settings");
           }
         }
       }
@@ -107,8 +138,10 @@ function App() {
 
   // Capture PWA install prompt
   useEffect(() => {
-    const dismissed = localStorage.getItem('fmnBilling_pwa_dismissed');
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+    const dismissed = localStorage.getItem("fmnBilling_pwa_dismissed");
+    const isStandalone = window.matchMedia(
+      "(display-mode: standalone)",
+    ).matches;
     if (dismissed || isStandalone) return;
 
     const handler = (e) => {
@@ -116,44 +149,50 @@ function App() {
       deferredPrompt.current = e;
       setShowInstallBanner(true);
     };
-    window.addEventListener('beforeinstallprompt', handler);
-    return () => window.removeEventListener('beforeinstallprompt', handler);
+    window.addEventListener("beforeinstallprompt", handler);
+    return () => window.removeEventListener("beforeinstallprompt", handler);
   }, []);
 
   useEffect(() => {
-    sessionStorage.setItem('gst_currentView', currentView);
+    sessionStorage.setItem("gst_currentView", currentView);
   }, [currentView]);
 
   useEffect(() => {
     if (editingBill) {
-      sessionStorage.setItem('gst_editingBill', JSON.stringify(editingBill));
+      sessionStorage.setItem("gst_editingBill", JSON.stringify(editingBill));
     } else {
-      sessionStorage.removeItem('gst_editingBill');
+      sessionStorage.removeItem("gst_editingBill");
     }
   }, [editingBill]);
 
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', darkMode ? 'dark' : 'light');
-    localStorage.setItem('fmnBilling_theme', darkMode ? 'dark' : 'light');
+    document.documentElement.setAttribute(
+      "data-theme",
+      darkMode ? "dark" : "light",
+    );
+    localStorage.setItem("fmnBilling_theme", darkMode ? "dark" : "light");
   }, [darkMode]);
 
-  // Load all saved business profiles
   useEffect(() => {
-    if (serverStatus === 'online') {
-      getAllProfiles().then(setAllProfiles).catch(() => {});
+    if (serverStatus === "online") {
+      getAllProfiles()
+        .then(setAllProfiles)
+        .catch(() => {});
     }
   }, [serverStatus]);
 
-  // Close profile menu on outside click
   useEffect(() => {
     if (!showProfileMenu) return;
     const handler = (e) => {
-      if (profileMenuRef.current && !profileMenuRef.current.contains(e.target)) {
+      if (
+        profileMenuRef.current &&
+        !profileMenuRef.current.contains(e.target)
+      ) {
         setShowProfileMenu(false);
       }
     };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
   }, [showProfileMenu]);
 
   const handleSwitchProfile = async (bp) => {
@@ -165,30 +204,30 @@ function App() {
   };
 
   const handleNewInvoice = () => {
-    sessionStorage.removeItem('gst_invoiceDraft');
+    sessionStorage.removeItem("gst_invoiceDraft");
     setEditingBill(null);
-    setCurrentView('new');
+    setCurrentView("new");
   };
 
   const handleEditInvoice = (bill) => {
-    sessionStorage.removeItem('gst_invoiceDraft');
+    sessionStorage.removeItem("gst_invoiceDraft");
     setEditingBill(bill);
-    setCurrentView('new');
+    setCurrentView("new");
   };
 
   const handleDuplicateInvoice = (bill) => {
-    sessionStorage.removeItem('gst_invoiceDraft');
+    sessionStorage.removeItem("gst_invoiceDraft");
     const clone = JSON.parse(JSON.stringify(bill));
     clone._isDuplicate = true;
     setEditingBill(clone);
-    setCurrentView('new');
+    setCurrentView("new");
   };
 
   const handleInstallPWA = async () => {
     if (!deferredPrompt.current) return;
     deferredPrompt.current.prompt();
     const result = await deferredPrompt.current.userChoice;
-    if (result.outcome === 'accepted') {
+    if (result.outcome === "accepted") {
       setShowInstallBanner(false);
     }
     deferredPrompt.current = null;
@@ -196,35 +235,38 @@ function App() {
 
   const dismissInstallBanner = () => {
     setShowInstallBanner(false);
-    localStorage.setItem('fmnBilling_pwa_dismissed', '1');
+    localStorage.setItem("fmnBilling_pwa_dismissed", "1");
   };
 
   const handleConvertToInvoice = (bill) => {
-    sessionStorage.removeItem('gst_invoiceDraft');
+    sessionStorage.removeItem("gst_invoiceDraft");
     const clone = JSON.parse(JSON.stringify(bill));
     clone._isDuplicate = true;
-    clone._convertToType = 'tax-invoice';
+    clone._convertToType = "tax-invoice";
     setEditingBill(clone);
-    setCurrentView('new');
+    setCurrentView("new");
   };
 
   const navItems = [
-    { id: 'dashboard', icon: Home, label: 'Dashboard' },
-    { id: 'new', icon: Plus, label: 'New Invoice', onClick: handleNewInvoice },
-    { id: 'clients', icon: Users, label: 'Clients' },
-    { id: 'inventory', icon: Package, label: 'Products' },
-    { id: 'expenses', icon: Wallet, label: 'Expenses' },
-    { id: 'purchases', icon: ShoppingCart, label: 'Purchases' },
-    { id: 'recurring', icon: RefreshCw, label: 'Recurring' },
-    { id: 'receipts', icon: Receipt, label: 'Receipts' },
-    { id: 'reports', icon: BarChart3, label: 'Reports' },
-    { id: 'filing', icon: BookOpen, label: 'GST Returns' },
+    { id: "dashboard", icon: Home, label: "Dashboard" },
+    { id: "new", icon: Plus, label: "New Invoice", onClick: handleNewInvoice },
+    { id: "clients", icon: Users, label: "Clients" },
+    { id: "inventory", icon: Package, label: "Products" },
+    { id: "expenses", icon: Wallet, label: "Expenses" },
+    { id: "purchases", icon: ShoppingCart, label: "Purchases" },
+    { id: "recurring", icon: RefreshCw, label: "Recurring" },
+    { id: "receipts", icon: Receipt, label: "Receipts" },
+    { id: "reports", icon: BarChart3, label: "Reports" },
+    { id: "filing", icon: BookOpen, label: "GST Returns" },
   ];
 
   if (!authReady) {
     return (
       <div className="server-down-overlay">
-        <LoadingPanel title="Signing you in" message="Connecting to Firebase Auth..." />
+        <LoadingPanel
+          title="Signing you in"
+          message="Connecting to Firebase Auth..."
+        />
       </div>
     );
   }
@@ -238,10 +280,13 @@ function App() {
     );
   }
 
-  if (serverStatus === 'checking') {
+  if (serverStatus === "checking") {
     return (
       <div className="server-down-overlay">
-        <LoadingPanel title="Loading workspace" message="Syncing your billing data..." />
+        <LoadingPanel
+          title="Loading workspace"
+          message="Syncing your billing data..."
+        />
       </div>
     );
   }
@@ -251,22 +296,13 @@ function App() {
       <div className="server-down-overlay">
         <div className="server-down-modal">
           <FileText size={48} color="#3b82f6" />
-          <h2>Firebase Is Not Connected</h2>
-          <p>
-            Add your Firebase web app config in <strong>.env</strong> and reload the app.
+          <h2>Backend Is Not Connected</h2>
+
+          <p className="server-down-safe">
+            No invoice or business data is written to local JSON storage.
           </p>
-          <div className="server-down-steps">
-            <p className="server-down-hint">Required values:</p>
-            <ol>
-              <li><strong>VITE_FIREBASE_API_KEY</strong></li>
-              <li><strong>VITE_FIREBASE_PROJECT_ID</strong></li>
-              <li><strong>VITE_FIREBASE_APP_ID</strong></li>
-              <li><strong>VITE_FIREBASE_DATA_PATH</strong></li>
-            </ol>
-          </div>
-          <p className="server-down-safe">No invoice or business data is written to local JSON storage.</p>
           <div className="server-down-waiting">
-            <span>Waiting for Firebase configuration...</span>
+            <span>Waiting for configuration...</span>
           </div>
         </div>
       </div>
@@ -276,10 +312,12 @@ function App() {
   if (showWelcome) {
     return (
       <>
-        <WelcomeGuide onComplete={(p) => {
-          if (p) setProfile(p);
-          setShowWelcome(false);
-        }} />
+        <WelcomeGuide
+          onComplete={(p) => {
+            if (p) setProfile(p);
+            setShowWelcome(false);
+          }}
+        />
         <ToastContainer />
       </>
     );
@@ -298,21 +336,41 @@ function App() {
           </div>
         </div>
 
-        <div className="profile-switcher" ref={profileMenuRef} style={{ position: 'relative' }}>
+        <div
+          className="profile-switcher"
+          ref={profileMenuRef}
+          style={{ position: "relative" }}
+        >
           <div className="profile-switcher-row">
             <button
               className="profile-switcher-btn"
-              onClick={() => allProfiles.length > 1 && setShowProfileMenu(v => !v)}
-              title={allProfiles.length > 1 ? 'Switch business profile' : profile?.businessName || 'My Business'}
-              style={{ cursor: allProfiles.length > 1 ? 'pointer' : 'default' }}
+              onClick={() =>
+                allProfiles.length > 1 && setShowProfileMenu((v) => !v)
+              }
+              title={
+                allProfiles.length > 1
+                  ? "Switch business profile"
+                  : profile?.businessName || "My Business"
+              }
+              style={{ cursor: allProfiles.length > 1 ? "pointer" : "default" }}
             >
               <Building2 size={14} />
-              <span className="profile-switcher-name">{profile?.businessName || 'My Business'}</span>
-              {allProfiles.length > 1 && <ChevronDown size={13} style={{ marginLeft: 'auto', opacity: 0.6 }} />}
+              <span className="profile-switcher-name">
+                {profile?.businessName || "My Business"}
+              </span>
+              {allProfiles.length > 1 && (
+                <ChevronDown
+                  size={13}
+                  style={{ marginLeft: "auto", opacity: 0.6 }}
+                />
+              )}
             </button>
             <button
               className="profile-switcher-edit"
-              onClick={() => { setShowProfileMenu(false); setCurrentView('settings'); }}
+              onClick={() => {
+                setShowProfileMenu(false);
+                setCurrentView("settings");
+              }}
               title="Edit business profile"
             >
               <Pencil size={13} />
@@ -320,10 +378,10 @@ function App() {
           </div>
           {showProfileMenu && (
             <div className="profile-switcher-menu">
-              {allProfiles.map(bp => (
+              {allProfiles.map((bp) => (
                 <button
                   key={bp.id || bp.businessName}
-                  className={`profile-switcher-item${bp.businessName?.trim().toLowerCase() === profile?.businessName?.trim().toLowerCase() ? ' active' : ''}`}
+                  className={`profile-switcher-item${bp.businessName?.trim().toLowerCase() === profile?.businessName?.trim().toLowerCase() ? " active" : ""}`}
                   onClick={() => handleSwitchProfile(bp)}
                 >
                   {bp.businessName}
@@ -331,7 +389,10 @@ function App() {
               ))}
               <button
                 className="profile-switcher-item profile-switcher-manage"
-                onClick={() => { setShowProfileMenu(false); setCurrentView('settings'); }}
+                onClick={() => {
+                  setShowProfileMenu(false);
+                  setCurrentView("settings");
+                }}
               >
                 Manage profiles...
               </button>
@@ -340,21 +401,28 @@ function App() {
         </div>
 
         <nav className="sidebar-nav">
-          {navItems.map(item => (
+          {navItems.map((item) => (
             <button
               key={item.id}
-              className={`nav-btn ${currentView === item.id ? 'nav-btn-active' : ''}`}
+              className={`nav-btn ${currentView === item.id ? "nav-btn-active" : ""}`}
               onClick={item.onClick || (() => setCurrentView(item.id))}
             >
               <item.icon size={18} /> {item.label}
             </button>
           ))}
-          <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+          <div
+            style={{
+              marginTop: "auto",
+              display: "flex",
+              flexDirection: "column",
+              gap: "0.25rem",
+            }}
+          >
             {authEnabled && (
               <button
                 className="nav-btn"
                 onClick={() => signOutUser()}
-                title={authUser?.email || 'Sign out'}
+                title={authUser?.email || "Sign out"}
               >
                 <LogOut size={18} /> Sign Out
               </button>
@@ -362,20 +430,24 @@ function App() {
             <button
               className="nav-btn"
               onClick={() => setDarkMode(!darkMode)}
-              title={darkMode ? 'Light Mode' : 'Dark Mode'}
+              title={darkMode ? "Light Mode" : "Dark Mode"}
             >
               {darkMode ? <Sun size={18} /> : <Moon size={18} />}
-              {darkMode ? 'Light Mode' : 'Dark Mode'}
+              {darkMode ? "Light Mode" : "Dark Mode"}
             </button>
             <button
-              className={`nav-btn ${currentView === 'settings' ? 'nav-btn-active' : ''}`}
-              onClick={() => setCurrentView('settings')}
+              className={`nav-btn ${currentView === "settings" ? "nav-btn-active" : ""}`}
+              onClick={() => setCurrentView("settings")}
             >
               <Settings size={18} /> Settings
             </button>
             <div className={`server-status server-status-${serverStatus}`}>
               <span className="server-status-dot" />
-              {serverStatus === 'online' ? 'Firebase Ready' : serverStatus === 'offline' ? 'Firebase Offline' : 'Connecting...'}
+              {serverStatus === "online"
+                ? "Ready"
+                : serverStatus === "offline"
+                  ? "Offline"
+                  : "Connecting..."}
             </div>
           </div>
         </nav>
@@ -384,46 +456,58 @@ function App() {
       {showInstallBanner && (
         <div className="pwa-install-banner">
           <Download size={18} />
-          <span><strong>Install as Desktop App</strong> — opens instantly, no browser needed!</span>
-          <button className="pwa-install-btn" onClick={handleInstallPWA}>Install App</button>
-          <button className="pwa-dismiss-btn" onClick={dismissInstallBanner} title="Dismiss"><X size={16} /></button>
+          <span>
+            <strong>Install as Desktop App</strong> — opens instantly, no
+            browser needed!
+          </span>
+          <button className="pwa-install-btn" onClick={handleInstallPWA}>
+            Install App
+          </button>
+          <button
+            className="pwa-dismiss-btn"
+            onClick={dismissInstallBanner}
+            title="Dismiss"
+          >
+            <X size={16} />
+          </button>
         </div>
       )}
       <div className="main-content">
-        {currentView === 'dashboard' && (
-          <Dashboard onNew={handleNewInvoice} onEdit={handleEditInvoice} onDuplicate={handleDuplicateInvoice} onConvert={handleConvertToInvoice} />
-        )}
-        {currentView === 'new' && (
-          <InvoiceGenerator
-            onBack={() => { setEditingBill(null); setCurrentView('dashboard'); }}
-            profile={profile} editingBill={editingBill}
+        {currentView === "dashboard" && (
+          <Dashboard
+            onNew={handleNewInvoice}
+            onEdit={handleEditInvoice}
+            onDuplicate={handleDuplicateInvoice}
+            onConvert={handleConvertToInvoice}
           />
         )}
-        {currentView === 'clients' && (
-          <ClientsView onNew={handleNewInvoice} onEdit={handleEditInvoice} onDuplicate={handleDuplicateInvoice} />
+        {currentView === "new" && (
+          <InvoiceGenerator
+            onBack={() => {
+              setEditingBill(null);
+              setCurrentView("dashboard");
+            }}
+            profile={profile}
+            editingBill={editingBill}
+          />
         )}
-        {currentView === 'inventory' && (
-          <InventoryView />
+        {currentView === "clients" && (
+          <ClientsView
+            onNew={handleNewInvoice}
+            onEdit={handleEditInvoice}
+            onDuplicate={handleDuplicateInvoice}
+          />
         )}
-        {currentView === 'expenses' && (
-          <ExpenseTracker />
-        )}
-        {currentView === 'purchases' && (
-          <PurchaseBills />
-        )}
-        {currentView === 'recurring' && (
+        {currentView === "inventory" && <InventoryView />}
+        {currentView === "expenses" && <ExpenseTracker />}
+        {currentView === "purchases" && <PurchaseBills />}
+        {currentView === "recurring" && (
           <RecurringInvoices onEdit={handleEditInvoice} />
         )}
-        {currentView === 'receipts' && (
-          <ReceiptVoucher />
-        )}
-        {currentView === 'reports' && (
-          <ReportsView />
-        )}
-        {currentView === 'filing' && (
-          <GSTReturns />
-        )}
-        {currentView === 'settings' && (
+        {currentView === "receipts" && <ReceiptVoucher />}
+        {currentView === "reports" && <ReportsView />}
+        {currentView === "filing" && <GSTReturns />}
+        {currentView === "settings" && (
           <SettingsView onSaved={(p) => setProfile(p)} />
         )}
       </div>

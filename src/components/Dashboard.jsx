@@ -1,27 +1,17 @@
 import { useState, useEffect } from 'react';
-import { FileText, Trash2, Plus, IndianRupee, Receipt, Edit3, TrendingUp, Search, Copy, X, CheckCircle, Clock, AlertTriangle, MessageCircle, Mail, StickyNote, Send, Package } from 'lucide-react';
+import { Plus, StickyNote } from 'lucide-react';
 import { getAllBills, deleteBill, saveBill, getAllProducts, saveProduct, getProfile, getAllClients } from '../store';
 import { formatCurrency, INVOICE_TYPES } from '../utils';
 import { InlineLoadingState } from './LoadingSpinner';
-import { toast } from './Toast';
-
-const STATUS_CONFIG = {
-  unpaid: { label: 'Unpaid', icon: Clock, color: '#f59e0b', bg: '#fffbeb' },
-  partial: { label: 'Partial', icon: Clock, color: '#8b5cf6', bg: '#f5f3ff' },
-  paid: { label: 'Paid', icon: CheckCircle, color: '#059669', bg: '#ecfdf5' },
-  overdue: { label: 'Overdue', icon: AlertTriangle, color: '#dc2626', bg: '#fef2f2' },
-};
-
-function getFYOptions() {
-  const now = new Date();
-  const currentYear = now.getMonth() >= 3 ? now.getFullYear() : now.getFullYear() - 1;
-  const options = [];
-  for (let i = 0; i < 5; i++) {
-    const y = currentYear - i;
-    options.push({ value: `${y}-${y + 1}`, label: `FY ${y}-${String(y + 1).slice(-2)}`, from: `${y}-04-01`, to: `${y + 1}-03-31` });
-  }
-  return options;
-}
+import { toast } from '../lib/toast';
+import { getFinancialYearOptions } from '../lib/periods';
+import DashboardStats from './dashboard/DashboardStats';
+import LowStockAlert from './dashboard/LowStockAlert';
+import OverdueBanner from './dashboard/OverdueBanner';
+import PaymentModal from './dashboard/PaymentModal';
+import RemindAllModal from './dashboard/RemindAllModal';
+import DashboardTable from './dashboard/DashboardTable';
+import { STATUS_CONFIG } from './dashboard/dashboardConfig';
 
 export default function Dashboard({ onNew, onEdit, onDuplicate, onConvert }) {
   const [bills, setBills] = useState([]);
@@ -41,7 +31,7 @@ export default function Dashboard({ onNew, onEdit, onDuplicate, onConvert }) {
   const [lowStockProducts, setLowStockProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const fyOptions = getFYOptions();
+  const fyOptions = getFinancialYearOptions();
 
   const loadBills = async () => {
     try {
@@ -49,7 +39,6 @@ export default function Dashboard({ onNew, onEdit, onDuplicate, onConvert }) {
       const data = await getAllBills();
       const today = new Date().toISOString().split('T')[0];
 
-      // Auto-detect overdue: if due date passed and not paid, mark as overdue
       for (const bill of data) {
         const dueDate = bill.data?.details?.dueDate;
         if (dueDate && dueDate < today && bill.status !== 'paid' && bill.status !== 'overdue') {
@@ -60,7 +49,6 @@ export default function Dashboard({ onNew, onEdit, onDuplicate, onConvert }) {
 
       setBills(data);
 
-      // Group totals by currency
       const byCurrency = {};
       for (const b of data) {
         const cur = b.currency || b.data?.invoiceOptions?.currency || 'INR';
@@ -103,12 +91,11 @@ export default function Dashboard({ onNew, onEdit, onDuplicate, onConvert }) {
     if (dateFrom) result = result.filter(b => b.invoiceDate >= dateFrom);
     if (dateTo) result = result.filter(b => b.invoiceDate <= dateTo);
     setFiltered(result);
-  }, [bills, search, typeFilter, statusFilter, fyFilter, dateFrom, dateTo]);
+  }, [bills, search, typeFilter, statusFilter, fyFilter, dateFrom, dateTo, fyOptions]);
 
   const handleDelete = async (bill) => {
     if (confirm('Delete this invoice? This cannot be undone.')) {
       try {
-        // Restore stock for products used in this invoice
         if (bill.data?.items) {
           const products = await getAllProducts();
           for (const item of bill.data.items) {
@@ -223,316 +210,69 @@ export default function Dashboard({ onNew, onEdit, onDuplicate, onConvert }) {
         <button className="btn btn-primary" onClick={onNew}><Plus size={18} /> New Invoice</button>
       </div>
 
-      {overdueBills.length > 0 && (
-        <div className="overdue-banner" onClick={() => { setStatusFilter('overdue'); }}
-          style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 10, padding: '0.85rem 1.25rem', marginBottom: '1.25rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <AlertTriangle size={20} style={{ color: '#dc2626', flexShrink: 0 }} />
-          <div style={{ flex: 1 }}>
-            <span style={{ fontWeight: 700, color: '#dc2626' }}>
-              {overdueBills.length} overdue invoice{overdueBills.length > 1 ? 's' : ''}
-            </span>
-            <span style={{ color: '#991b1b', marginLeft: 8, fontSize: '0.85rem' }}>
-              — {overdueStr} outstanding
-            </span>
-          </div>
-          <button className="btn btn-secondary" style={{ fontSize: '0.75rem', padding: '0.3rem 0.75rem', whiteSpace: 'nowrap' }}
-            onClick={(e) => { e.stopPropagation(); setShowRemindAll(true); }}>
-            <Send size={13} /> Remind All
-          </button>
-          <span style={{ fontSize: '0.78rem', color: '#dc2626', fontWeight: 500 }}>View all &rarr;</span>
-        </div>
-      )}
+      <OverdueBanner
+        overdueCount={overdueBills.length}
+        overdueText={overdueStr}
+        onView={() => setStatusFilter('overdue')}
+        onRemindAll={(event) => { event.stopPropagation(); setShowRemindAll(true); }}
+      />
 
-      {/* Remind All Modal */}
-      {showRemindAll && (
-        <div className="modal-overlay" onClick={() => setShowRemindAll(false)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '550px' }}>
-            <h3 className="section-title">Send Payment Reminders</h3>
-            <p className="text-muted" style={{ marginBottom: '1rem', fontSize: '0.85rem' }}>
-              Click on a client below to send a WhatsApp payment reminder.
-            </p>
-            {overdueBills.length === 0 ? (
-              <p className="text-muted">No overdue invoices.</p>
-            ) : (
-              <div style={{ maxHeight: '400px', overflow: 'auto' }}>
-                {overdueBills.map(bill => {
-                  const phone = getClientPhone(bill);
-                  return (
-                    <div key={bill.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.6rem 0', borderBottom: '1px solid var(--border)' }}>
-                      <div>
-                        <span className="font-medium">{bill.clientName}</span>
-                        <span className="text-muted" style={{ marginLeft: 8, fontSize: '0.8rem' }}>{bill.invoiceNumber}</span>
-                        <span style={{ marginLeft: 8, fontWeight: 600, color: '#dc2626', fontSize: '0.85rem' }}>
-                          {formatCurrency(bill.totalAmount - (bill.paidAmount || 0), bill.currency || bill.data?.invoiceOptions?.currency)}
-                        </span>
-                        {phone && <span className="text-muted" style={{ marginLeft: 8, fontSize: '0.75rem' }}>{phone}</span>}
-                      </div>
-                      <button className="btn btn-primary" style={{ fontSize: '0.75rem', padding: '0.3rem 0.75rem' }}
-                        onClick={() => sendReminder({ ...bill, clientPhone: phone })}>
-                        <MessageCircle size={13} /> Remind
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-            <div className="flex gap-2 justify-end mt-4">
-              <button className="btn btn-secondary" onClick={() => setShowRemindAll(false)}>Close</button>
-            </div>
-          </div>
-        </div>
-      )}
+      <RemindAllModal
+        show={showRemindAll}
+        overdueBills={overdueBills}
+        getClientPhone={getClientPhone}
+        onClose={() => setShowRemindAll(false)}
+        onSendReminder={sendReminder}
+      />
 
-      <div className="stats-grid stats-grid-4">
-        <div className="stat-card">
-          <div className="stat-icon stat-icon-blue"><IndianRupee size={22} /></div>
-          <div style={{ flex: 1 }}>
-            <p className="stat-label">Total Invoiced</p>
-            {Object.entries(stats.byCurrency).map(([cur, v]) => (
-              <div key={cur} className="stat-value" style={{ fontSize: Object.keys(stats.byCurrency).length > 1 ? '1.1rem' : undefined }}>
-                {formatCurrency(v.total, cur)}
-              </div>
-            ))}
-            {Object.keys(stats.byCurrency).length === 0 && <h2 className="stat-value">—</h2>}
-          </div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-icon stat-icon-green"><TrendingUp size={22} /></div>
-          <div style={{ flex: 1 }}>
-            <p className="stat-label">Tax Collected</p>
-            {Object.entries(stats.byCurrency).map(([cur, v]) => (
-              <div key={cur} className="stat-value stat-value-green" style={{ fontSize: Object.keys(stats.byCurrency).length > 1 ? '1.1rem' : undefined }}>
-                {formatCurrency(v.tax, cur)}
-              </div>
-            ))}
-            {Object.keys(stats.byCurrency).length === 0 && <h2 className="stat-value stat-value-green">—</h2>}
-          </div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-icon stat-icon-amber"><Clock size={22} /></div>
-          <div style={{ flex: 1 }}>
-            <p className="stat-label">Outstanding</p>
-            {Object.entries(stats.byCurrency).map(([cur, v]) => (
-              <div key={cur} className="stat-value stat-value-amber" style={{ fontSize: Object.keys(stats.byCurrency).length > 1 ? '1.1rem' : undefined }}>
-                {formatCurrency(v.unpaid, cur)}
-              </div>
-            ))}
-            {Object.keys(stats.byCurrency).length === 0 && <h2 className="stat-value stat-value-amber">—</h2>}
-          </div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-icon stat-icon-purple"><Receipt size={22} /></div>
-          <div><p className="stat-label">Invoices</p><h2 className="stat-value stat-value-purple">{stats.count}</h2></div>
-        </div>
-      </div>
+      <DashboardStats stats={stats} />
+      <LowStockAlert products={lowStockProducts} />
 
-      {/* Low Stock Alerts */}
-      {lowStockProducts.length > 0 && (
-        <div className="glass-panel" style={{ marginBottom: '1.25rem', padding: '1rem 1.25rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
-            <Package size={18} style={{ color: '#d97706' }} />
-            <h3 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 700, color: '#d97706' }}>
-              Low Stock Alert ({lowStockProducts.length} item{lowStockProducts.length > 1 ? 's' : ''})
-            </h3>
-          </div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-            {lowStockProducts.map(p => (
-              <div key={p.id} style={{
-                padding: '0.4rem 0.75rem', borderRadius: 6, fontSize: '0.8rem',
-                background: (p.stock ?? 0) <= 0 ? '#fef2f2' : '#fffbeb',
-                border: `1px solid ${(p.stock ?? 0) <= 0 ? '#fecaca' : '#fde68a'}`,
-                color: (p.stock ?? 0) <= 0 ? '#dc2626' : '#d97706',
-              }}>
-                <strong>{p.name}</strong>
-                {p.hsn ? <span className="text-muted" style={{ marginLeft: 4, fontSize: '0.72rem' }}>({p.hsn})</span> : null}
-                <span style={{ marginLeft: 6, fontWeight: 700 }}>
-                  {(p.stock ?? 0) <= 0 ? 'Out of Stock' : `Stock: ${p.stock}`}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <div className="glass-panel">
-        <div className="table-header"><h3>Invoices</h3></div>
-        {loading ? (
+      {loading ? (
+        <div className="glass-panel p-6">
           <InlineLoadingState title="Loading invoices" />
-        ) : (
+        </div>
+      ) : (
         <>
-        <div className="filters-bar">
-          <div className="search-box">
-            <Search size={16} className="search-icon" />
-            <input type="text" placeholder="Search client or invoice..." value={search}
-              onChange={e => setSearch(e.target.value)} className="search-input" />
-          </div>
-          <select className="filter-select" value={fyFilter} onChange={e => setFyFilter(e.target.value)}>
-            <option value="all">All Years</option>
-            {fyOptions.map(fy => <option key={fy.value} value={fy.value}>{fy.label}</option>)}
-          </select>
-          <select className="filter-select" value={typeFilter} onChange={e => setTypeFilter(e.target.value)}>
-            <option value="all">All Types</option>
-            {Object.entries(INVOICE_TYPES).map(([key, val]) => <option key={key} value={key}>{val.label}</option>)}
-          </select>
-          <select className="filter-select" value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
-            <option value="all">All Status</option>
-            <option value="unpaid">Unpaid</option>
-            <option value="partial">Partial</option>
-            <option value="paid">Paid</option>
-            <option value="overdue">Overdue</option>
-          </select>
-          <input type="date" className="filter-date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} title="From" />
-          <input type="date" className="filter-date" value={dateTo} onChange={e => setDateTo(e.target.value)} title="To" />
-          {hasFilters && <button className="icon-btn icon-btn-red" onClick={clearFilters} title="Clear"><X size={15} /></button>}
-        </div>
-
-        {filtered.length === 0 ? (
-          <div className="empty-state">
-            <FileText size={48} />
-            <p>{bills.length === 0 ? 'No invoices yet.' : 'No invoices match your filters.'}</p>
-            {bills.length === 0 && <button className="btn btn-primary" onClick={onNew}><Plus size={18} /> Create Invoice</button>}
-          </div>
-        ) : (
-          <div className="table-scroll">
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Invoice No.</th>
-                  <th>Type</th>
-                  <th>Client</th>
-                  <th>Amount</th>
-                  <th>Paid</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map(bill => {
-                  const status = bill.status || 'unpaid';
-                  const sc = STATUS_CONFIG[status] || STATUS_CONFIG.unpaid;
-                  const isOverdue = status !== 'paid' && bill.data?.details?.dueDate && new Date(bill.data.details.dueDate) < new Date();
-                  const daysOverdue = isOverdue ? Math.floor((new Date() - new Date(bill.data.details.dueDate)) / 86400000) : 0;
-                  const billCurrency = bill.currency || bill.data?.invoiceOptions?.currency || 'INR';
-                  const parsedDate = Date.parse(bill.invoiceDate || '');
-                  const displayDate = Number.isNaN(parsedDate) ? '-' : new Date(parsedDate).toLocaleDateString('en-IN');
-                  return (
-                    <tr key={bill.id} className={isOverdue || status === 'overdue' ? 'row-overdue' : ''}>
-                      <td className="text-muted">{displayDate}</td>
-                      <td><span className="invoice-badge">{bill.invoiceNumber}</span></td>
-                      <td><span className="type-badge">{(INVOICE_TYPES[bill.invoiceType || 'tax-invoice'])?.label}</span></td>
-                      <td className="font-medium td-client" title={bill.clientName}>
-                        {bill.clientName}
-                        {bill.data?.internalNote && (
-                          <span title={bill.data.internalNote} style={{ marginLeft: 4, cursor: 'help', verticalAlign: 'middle' }}>
-                            <StickyNote size={13} style={{ color: '#ca8a04' }} />
-                          </span>
-                        )}
-                      </td>
-                      <td className="font-bold">
-                        {formatCurrency(bill.totalAmount, billCurrency)}
-                        {billCurrency !== 'INR' && <span style={{ marginLeft: 5, fontSize: '0.7rem', fontWeight: 600, color: '#3b82f6', background: 'rgba(59,130,246,0.1)', padding: '1px 5px', borderRadius: 4 }}>{billCurrency}</span>}
-                      </td>
-                      <td className="text-muted">{(bill.paidAmount || 0) > 0 ? formatCurrency(bill.paidAmount, billCurrency) : '-'}</td>
-                      <td>
-                        <select className="status-select" value={isOverdue && status !== 'overdue' ? 'overdue' : status}
-                          style={{ background: sc.bg, color: sc.color, borderColor: sc.color + '44' }}
-                          onChange={e => changeStatus(bill, e.target.value)}>
-                          {Object.entries(STATUS_CONFIG).map(([key, val]) => (
-                            <option key={key} value={key}>{val.label}</option>
-                          ))}
-                        </select>
-                        {daysOverdue > 0 && <span style={{ fontSize: '0.7rem', color: '#dc2626', display: 'block', marginTop: 2 }}>{daysOverdue}d overdue</span>}
-                      </td>
-                      <td>
-                        <div className="table-actions">
-                          <button className="icon-btn icon-btn-blue" onClick={() => handleView(bill)} title="Edit"><Edit3 size={15} /></button>
-                          <button className="icon-btn icon-btn-blue" onClick={() => onDuplicate(bill)} title="Duplicate"><Copy size={15} /></button>
-                          {(bill.invoiceType === 'proforma' || bill.invoiceType === 'delivery-challan') && (
-                            <button className="icon-btn icon-btn-green" onClick={() => onConvert(bill)} title="Convert to Tax Invoice"><FileText size={15} /></button>
-                          )}
-                          <button className="icon-btn icon-btn-green" onClick={() => openPaymentModal(bill)} title="Payment"><IndianRupee size={15} /></button>
-                          <button className="icon-btn icon-btn-green" onClick={() => shareWhatsApp(bill)} title="WhatsApp"><MessageCircle size={15} /></button>
-                          {(isOverdue || status === 'overdue') && (
-                            <button className="icon-btn icon-btn-green" onClick={() => sendReminder({ ...bill, clientPhone: getClientPhone(bill) })} title="Send Reminder" style={{ color: '#d97706' }}><Send size={15} /></button>
-                          )}
-                          <button className="icon-btn icon-btn-blue" onClick={() => shareEmail(bill)} title="Email"><Mail size={15} /></button>
-                          <button className="icon-btn icon-btn-red" onClick={() => handleDelete(bill)} title="Delete"><Trash2 size={15} /></button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
+          <DashboardTable
+            filtered={filtered}
+            bills={bills}
+            fyFilter={fyFilter}
+            typeFilter={typeFilter}
+            statusFilter={statusFilter}
+            dateFrom={dateFrom}
+            dateTo={dateTo}
+            search={search}
+            hasFilters={hasFilters}
+            fyOptions={fyOptions}
+            loading={loading}
+            onSearch={setSearch}
+            onFyChange={setFyFilter}
+            onTypeChange={setTypeFilter}
+            onStatusChange={changeStatus}
+            onDateFromChange={setDateFrom}
+            onDateToChange={setDateTo}
+            onClearFilters={clearFilters}
+            onNew={onNew}
+            onView={handleView}
+            onDuplicate={onDuplicate}
+            onConvert={onConvert}
+            onPayment={openPaymentModal}
+            onShareWhatsApp={shareWhatsApp}
+            onShareEmail={shareEmail}
+            onDelete={handleDelete}
+            showNote={true}
+          />
+          {paymentModal && (
+            <PaymentModal
+              bill={paymentModal}
+              paymentInput={paymentInput}
+              setPaymentInput={setPaymentInput}
+              onClose={() => setPaymentModal(null)}
+              onRecordPayment={recordPayment}
+            />
+          )}
         </>
-        )}
-      </div>
-
-      {/* Payment Modal */}
-      {paymentModal && (
-        <div className="modal-overlay" onClick={() => setPaymentModal(null)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()}>
-            <h3 className="section-title">Record Payment</h3>
-            <p className="text-muted" style={{ marginBottom: '1rem', fontSize: '0.85rem' }}>
-              Invoice: <strong>{paymentModal.invoiceNumber}</strong> | Total: <strong>{formatCurrency(paymentModal.totalAmount, paymentModal.currency)}</strong>
-              {(paymentModal.paidAmount || 0) > 0 && <> | Paid: <strong>{formatCurrency(paymentModal.paidAmount, paymentModal.currency)}</strong></>}
-              {' '}| Balance: <strong style={{ color: '#dc2626' }}>{formatCurrency(paymentModal.totalAmount - (paymentModal.paidAmount || 0), paymentModal.currency)}</strong>
-            </p>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="form-group">
-                <label className="form-label">Amount Received</label>
-                <input type="number" className="form-input" value={paymentInput.amount}
-                  onChange={e => setPaymentInput(prev => ({ ...prev, amount: e.target.value }))}
-                  placeholder={String(paymentModal.totalAmount - (paymentModal.paidAmount || 0))} min="0" />
-              </div>
-              <div className="form-group">
-                <label className="form-label">Payment Date</label>
-                <input type="date" className="form-input" value={paymentInput.date}
-                  onChange={e => setPaymentInput(prev => ({ ...prev, date: e.target.value }))} />
-              </div>
-              <div className="form-group">
-                <label className="form-label">Payment Mode</label>
-                <select className="form-input" value={paymentInput.mode}
-                  onChange={e => setPaymentInput(prev => ({ ...prev, mode: e.target.value }))}>
-                  <option value="bank-transfer">Bank Transfer</option>
-                  <option value="upi">UPI</option>
-                  <option value="cash">Cash</option>
-                  <option value="cheque">Cheque</option>
-                  <option value="card">Card</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
-              <div className="form-group">
-                <label className="form-label">Note (optional)</label>
-                <input type="text" className="form-input" value={paymentInput.note}
-                  onChange={e => setPaymentInput(prev => ({ ...prev, note: e.target.value }))}
-                  placeholder="Transaction ID, ref..." />
-              </div>
-            </div>
-            {paymentModal.payments?.length > 0 && (
-              <div style={{ marginTop: '1rem' }}>
-                <label className="form-label">Payment History</label>
-                <div className="payment-history">
-                  {paymentModal.payments.map((p, i) => (
-                    <div key={i} className="payment-row">
-                      <span>{new Date(p.date).toLocaleDateString('en-IN')}</span>
-                      <span className="font-bold">{formatCurrency(p.amount, paymentModal.currency)}</span>
-                      <span className="text-muted">{p.mode}</span>
-                      {p.note && <span className="text-muted">{p.note}</span>}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-            <div className="flex gap-2 justify-end mt-4">
-              <button className="btn btn-secondary" onClick={() => setPaymentModal(null)}>Cancel</button>
-              <button className="btn btn-primary" onClick={recordPayment}>Record Payment</button>
-            </div>
-          </div>
-        </div>
       )}
     </div>
   );

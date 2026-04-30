@@ -3,7 +3,7 @@ import { Building2, FileText, BarChart3, Shield, ChevronRight, ChevronLeft, Chec
 import { saveProfile } from '../store';
 import { INDIAN_STATES } from '../utils';
 import { LoadingSpinner } from './LoadingSpinner';
-import { toast } from './Toast';
+import { toast } from'../lib/toast';
 
 const STEPS = [
   { id: 'welcome', title: 'Welcome', icon: FileText },
@@ -113,7 +113,6 @@ export default function WelcomeGuide({ onComplete }) {
             </div>
           )}
 
-          {/* Step 1: Business Details */}
           {step === 1 && (
             <div>
               <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.5rem', color: 'var(--text-primary)' }}>Business Details</h2>
@@ -173,7 +172,6 @@ export default function WelcomeGuide({ onComplete }) {
             </div>
           )}
 
-          {/* Step 2: Bank & UPI */}
           {step === 2 && (
             <div>
               <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.5rem', color: 'var(--text-primary)' }}>Bank & UPI Details</h2>
@@ -233,7 +231,6 @@ export default function WelcomeGuide({ onComplete }) {
             </div>
           )}
 
-          {/* Step 3: Ready */}
           {step === 3 && (
             <div style={{ textAlign: 'center' }}>
               <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>

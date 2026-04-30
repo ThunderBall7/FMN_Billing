@@ -3,7 +3,7 @@ import { Receipt, Plus, Trash2, Search, X, Download, Printer } from 'lucide-reac
 import { getAllReceipts, saveReceipt, deleteReceipt, getAllBills, getProfile } from '../store';
 import { formatCurrency, numberToWords } from '../utils';
 import { InlineLoadingState } from './LoadingSpinner';
-import { toast } from './Toast';
+import { toast } from'../lib/toast';
 
 const PAYMENT_MODES = ['Bank Transfer', 'UPI', 'Cash', 'Cheque', 'Card', 'Other'];
 
