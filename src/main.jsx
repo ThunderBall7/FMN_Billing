@@ -4,7 +4,6 @@ import { registerSW } from 'virtual:pwa-register'
 import App from './App.jsx'
 import './index.css'
 
-// Register service worker for local offline caching
 const updateSW = registerSW({
   onNeedRefresh() {
     updateSW(true)

@@ -312,7 +312,7 @@ body {
   color: #e2e8f0;
   font-family: 'Inter', system-ui, sans-serif;
 }
-.loading-panel,
+/* .loading-panel, */
 .server-down-modal {
   max-width: 480px;
   width: 90%;
@@ -327,17 +327,18 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.9rem;
+  gap: 0.5rem;
 }
 .loading-panel h2 {
-  margin: 0.25rem 0 0;
-  font-size: 1.5rem;
-  color: #f8fafc;
+  /* margin: 0.25rem 0 0; */
+  font-size: 1rem;
+  color: #2563eb;
 }
 .loading-panel p {
   color: #94a3b8;
-  font-size: 0.95rem;
-  line-height: 1.6;
+  font-size: 0.7rem;
+  line-height: 1.5;
+  color: #2563eb;;
   margin: 0;
 }
 .inline-loading-state {
