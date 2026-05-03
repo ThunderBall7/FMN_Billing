@@ -72,7 +72,7 @@ export default function DashboardTable({ filtered, bills, fyFilter, typeFilter, 
                 onClick={onClearFilters}
                 title="Clear"
               >
-                <X size={15} />
+                <X size={15} /> Clear
               </button>
             )}
           </div>
