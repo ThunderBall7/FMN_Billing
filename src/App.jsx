@@ -20,6 +20,8 @@ import {
   Building2,
   Pencil,
   LogOut,
+  Menu,
+  LayoutDashboard,
 } from "lucide-react";
 import { getAllProfiles, getProfile, saveProfile } from "./store";
 import {
@@ -71,6 +73,7 @@ function App() {
   const [allProfiles, setAllProfiles] = useState([]);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const profileMenuRef = useRef(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const authConfigured = isFirebaseAuthConfigured();
   const [authUser, setAuthUser] = useState(null);
@@ -286,7 +289,7 @@ function App() {
       <div className="server-down-overlay">
         <LoadingPanel
           title="Signing you in"
-          message="Connecting to Firebase Auth..."
+          message="Connecting..."
         />
       </div>
     );
@@ -347,13 +350,26 @@ function App() {
   return (
     <PrivacyProvider>
       <div className="app-layout">
-      <div className="sidebar">
+        {drawerOpen && (
+          <div
+            className="drawer-overlay"
+            onClick={() => setDrawerOpen(false)}
+          />
+        )}
+      <div className={`sidebar ${drawerOpen ? 'sidebar-open' : ''}`}>
+          {/* <button
+            className="sidebar-close-btn"
+            onClick={() => setDrawerOpen(false)}
+            aria-label="Close menu"
+          >
+            <X size={20} />
+          </button> */}
         <div className="sidebar-brand">
           <div className="sidebar-logo">
-            <FileText size={22} />
+            <LayoutDashboard size={22}/>
           </div>
           <div>
-            <h2 className="sidebar-title">FMNBilling</h2>
+            <h2 className="sidebar-title">FMN-Billing</h2>
             <p className="sidebar-subtitle">Business Workspace</p>
           </div>
         </div>
@@ -392,6 +408,7 @@ function App() {
               onClick={() => {
                 setShowProfileMenu(false);
                 setCurrentView("settings");
+                setDrawerOpen(false);
               }}
               title="Edit business profile"
             >
@@ -427,7 +444,10 @@ function App() {
             <button
               key={item.id}
               className={`nav-btn ${currentView === item.id ? "nav-btn-active" : ""}`}
-              onClick={item.onClick || (() => setCurrentView(item.id))}
+              onClick={() => {
+                (item.onClick || (() => setCurrentView(item.id)))();
+                setDrawerOpen(false);
+              }}
             >
               <item.icon size={18} /> {item.label}
             </button>
@@ -442,14 +462,20 @@ function App() {
           >
             <button
               className="nav-btn"
-              onClick={() => signOutUser()}
+              onClick={() => {
+                signOutUser();
+                setDrawerOpen(false);
+              }}
               title={authUser?.email || "Sign out"}
             >
               <LogOut size={18} /> Sign Out
             </button>
             <button
               className="nav-btn"
-              onClick={() => setDarkMode(!darkMode)}
+              onClick={() => {
+                setDarkMode(!darkMode);
+                setDrawerOpen(false);
+              }}
               title={darkMode ? "Light Mode" : "Dark Mode"}
             >
               {darkMode ? <Sun size={18} /> : <Moon size={18} />}
@@ -458,7 +484,10 @@ function App() {
             <PrivacyToggleButton />
             <button
               className={`nav-btn ${currentView === "settings" ? "nav-btn-active" : ""}`}
-              onClick={() => setCurrentView("settings")}
+              onClick={() => {
+                setCurrentView("settings");
+                setDrawerOpen(false);
+              }}
             >
               <Settings size={18} /> Settings
             </button>
@@ -474,7 +503,23 @@ function App() {
         </nav>
       </div>
 
-      {showInstallBanner && (
+      <div className="app-main-wrapper">
+        <div className="mobile-header">
+          <button
+            className="mobile-hamburger-btn"
+            onClick={() => setDrawerOpen(true)}
+            aria-label="Open menu"
+          >
+            <Menu size={20} />
+          </button>
+          <div className="mobile-header-brand">
+            <FileText size={18} />
+            <span className="mobile-company-name">{profile?.businessName || "FMNBilling"}</span>
+          </div>
+          <div className="mobile-header-spacer" />
+        </div>
+
+        {showInstallBanner && (
         <div className="pwa-install-banner">
           <Download size={18} />
           <span>
@@ -533,6 +578,7 @@ function App() {
         )}
       </div>
       <ToastContainer />
+      </div>
       </div>
     </PrivacyProvider>
   );

@@ -9,7 +9,7 @@ const updateSW = registerSW({
     updateSW(true)
   },
   onOfflineReady() {
-    console.log('fmnBilling is ready to work offline')
+    // console.log('fmnBilling is ready to work offline')
   },
 })
 
