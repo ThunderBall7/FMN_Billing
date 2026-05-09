@@ -4,7 +4,7 @@ import { INVOICE_TYPES } from '../../utils';
 import { Search } from 'lucide-react';
 import { PrivateAmount, PrivateValue } from '../PrivacyContext';
 
-export default function DashboardTable({ filtered, bills, fyFilter, typeFilter, statusFilter, dateFrom, dateTo, search, hasFilters, fyOptions, loading, onSearch, onFyChange, onTypeChange, onStatusChange, onDateFromChange, onDateToChange, onClearFilters, onNew, onView, onDuplicate, onConvert, onPayment, onShareWhatsApp, onShareEmail, onDelete, showNote }) {
+export default function DashboardTable({ filtered, bills, fyFilter, typeFilter, statusFilter, dateFrom, dateTo, search, hasFilters, fyOptions, loading, onSearch, onFyChange, onTypeChange, onStatusChange, onStatusFilterChange, onDateFromChange, onDateToChange, onClearFilters, onNew, onView, onDuplicate, onConvert, onPayment, onShareWhatsApp, onShareEmail, onDelete, showNote }) {
   return (
     <div className="glass-panel">
       <div className="table-header"><h3>Invoices</h3></div>
@@ -44,7 +44,9 @@ export default function DashboardTable({ filtered, bills, fyFilter, typeFilter, 
             <select
               className="filter-select"
               value={statusFilter}
-              onChange={(e) => onStatusChange(e.target.value)}
+              // onChange={(e) => onStatusChange(e.target.value)}
+              onChange={(e) => onStatusFilterChange(e.target.value)}
+
             >
               <option value="all">All Status</option>
               <option value="unpaid">Unpaid</option>

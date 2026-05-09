@@ -18,6 +18,16 @@ export default function RecurringInvoices() {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [generatingIds, setGeneratingIds] = useState(() => new Set());
+
+  const setTemplateGenerating = (id, isGenerating) => {
+    setGeneratingIds(current => {
+      const next = new Set(current);
+      if (isGenerating) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+  };
 
   const load = async () => {
     try {
@@ -69,6 +79,9 @@ export default function RecurringInvoices() {
   };
 
   const generateNow = async (tpl) => {
+    if (generatingIds.has(tpl.id)) return;
+
+    setTemplateGenerating(tpl.id, true);
     try {
       const typeConfig = INVOICE_TYPES[tpl.invoiceType || 'tax-invoice'];
       const invoiceNumber = await getNextInvoiceNumber(typeConfig.prefix);
@@ -122,9 +135,11 @@ export default function RecurringInvoices() {
       await saveRecurring({ ...tpl, nextDate: next.toISOString().split('T')[0], lastGenerated: today });
 
       toast(`Invoice ${invoiceNumber} generated for ${tpl.clientName}`, 'success');
-      load();
+      await load();
     } catch (err) {
       toast('Failed to generate: ' + err.message, 'error');
+    } finally {
+      setTemplateGenerating(tpl.id, false);
     }
   };
 
@@ -152,7 +167,8 @@ export default function RecurringInvoices() {
           <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
             {dueTemplates.map(tpl => (
               <button key={tpl.id} className="btn btn-primary" style={{ fontSize: '0.8rem', padding: '0.4rem 0.75rem' }}
-                onClick={() => generateNow(tpl)}>
+                onClick={() => generateNow(tpl)}
+                disabled={generatingIds.has(tpl.id)}>
                 <Play size={14} /> {tpl.clientName} — {FREQUENCIES.find(f => f.value === tpl.frequency)?.label}
               </button>
             ))}
@@ -174,6 +190,7 @@ export default function RecurringInvoices() {
         onDelete={handleDelete}
         onToggleActive={toggleActive}
         onGenerateNow={generateNow}
+        generatingIds={generatingIds}
       />
     </div>
   );

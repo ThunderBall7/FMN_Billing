@@ -59,6 +59,7 @@
 [data-theme="dark"] .client-card-header:hover, [data-theme="dark"] .payment-history, [data-theme="dark"] .upload-preview { background: #1e293b; }
 [data-theme="dark"] .payment-row, [data-theme="dark"] .upload-area { border-color: #334155; }
 [data-theme="dark"] .type-badge { background: #334155; color: #94a3b8; }
+[data-theme="dark"] .lead-profile-link { color: #fff; }
 [data-theme="dark"] .product-suggestions, [data-theme="dark"] .client-picker, [data-theme="dark"] .client-suggestions { background: #1e293b; border-color: #334155; }
 [data-theme="dark"] .product-suggestion-item, [data-theme="dark"] .client-picker-item, [data-theme="dark"] .client-suggestion-item { border-color: #334155; }
 [data-theme="dark"] .product-suggestion-item:hover { background: #334155; }
@@ -917,11 +918,16 @@ textarea.form-input { resize: vertical; min-height: 60px; }
   transition: all 0.15s;
 }
 
+.icon-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .icon-btn-blue {
   background: var(--primary-light);
   color: var(--primary);
 }
-.icon-btn-blue:hover { background: rgba(37, 99, 235, 0.15); }
+.icon-btn-blue:hover:not(:disabled) { background: rgba(37, 99, 235, 0.15); }
 
 .icon-btn-red {
   background: var(--danger-light);
@@ -931,7 +937,7 @@ textarea.form-input { resize: vertical; min-height: 60px; }
   justify-content: center;
   width: 68px;
 }
-.icon-btn-red:hover { background: rgba(220, 38, 38, 0.15); }
+.icon-btn-red:hover:not(:disabled) { background: rgba(220, 38, 38, 0.15); }
 
 /* ========= Dashboard ========= */
 .dashboard-container { max-width: 100%; margin: 0 auto; width: 100%; }
@@ -1296,7 +1302,7 @@ textarea.form-input { resize: vertical; min-height: 60px; }
 .icon-btn-green {
   color: #059669;
 }
-.icon-btn-green:hover {
+.icon-btn-green:hover:not(:disabled) {
   background: #ecfdf5;
 }
 

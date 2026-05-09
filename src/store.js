@@ -1,6 +1,7 @@
 // Firebase-backed storage only (frontend-only app).
 import { firebaseDelete, firebaseGet, firebaseIncrement, firebaseMapToArray, firebaseSet } from './services/firebaseSync';
-import { isFirebaseAppConfigured } from './services/firebaseAuth';
+import { getFirebaseApp, isFirebaseAppConfigured } from './services/firebaseAuth';
+import { collection, getDocs, getFirestore } from 'firebase/firestore';
 
 const ENV_FIREBASE = {
   enabled: true,
@@ -337,6 +338,33 @@ export const deleteReceipt = async (id) => {
 
 export const getAllProfiles = async () => {
   return getCollection('profiles', (a, b) => (a.businessName || '').localeCompare(b.businessName || ''));
+};
+
+function normalizeFirestoreDate(value) {
+  if (!value) return '';
+  if (typeof value === 'string') return value;
+  if (typeof value.toDate === 'function') return value.toDate().toISOString();
+  if (typeof value.seconds === 'number') return new Date(value.seconds * 1000).toISOString();
+  return '';
+}
+
+export const getAllLeads = async () => {
+  await getBackendSettings();
+  const snapshot = await getDocs(collection(getFirestore(getFirebaseApp()), 'contacts'));
+  return snapshot.docs
+    .map((entry) => {
+      const lead = entry.data() || {};
+      return {
+        ...lead,
+        id: lead.id || entry.id,
+        linkedInProfile: lead.linkedInProfile || lead.linkedinProfile || lead.linkedIn || '',
+        workEmail: lead.workEmail || lead.email || '',
+        contactNo: lead.contactNo || lead.phone || lead.contact || '',
+        message: lead.message || '',
+        createdAt: normalizeFirestoreDate(lead.createdAt),
+      };
+    })
+    .sort((a, b) => (Date.parse(b.createdAt || '') || 0) - (Date.parse(a.createdAt || '') || 0));
 };
 
 export const saveBusinessProfile = async (profile) => {
