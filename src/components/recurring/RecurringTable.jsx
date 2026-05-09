@@ -10,7 +10,7 @@ const FREQUENCIES = [
   { value: 'yearly', label: 'Yearly' },
 ];
 
-export default function RecurringTable({ templates, loading, onEdit, onDelete, onToggleActive, onGenerateNow }) {
+export default function RecurringTable({ templates, loading, onEdit, onDelete, onToggleActive, onGenerateNow, generatingIds = new Set() }) {
   return (
     <div className="glass-panel">
       <div className="table-header"><h3>Recurring Templates</h3></div>
@@ -44,6 +44,7 @@ export default function RecurringTable({ templates, loading, onEdit, onDelete, o
                   return s + base + (base * (parseFloat(i.taxPercent) || 0) / 100);
                 }, 0);
                 const isDue = tpl.active !== false && tpl.nextDate && tpl.nextDate <= new Date().toISOString().split('T')[0];
+                const isGenerating = generatingIds.has(tpl.id);
                 return (
                   <tr key={tpl.id} style={isDue ? { background: '#fffbeb' } : {}}>
                     <td className="font-medium">{tpl.clientName}</td>
@@ -62,7 +63,12 @@ export default function RecurringTable({ templates, loading, onEdit, onDelete, o
                     <td>
                       <div className="table-actions">
                         {isDue && (
-                          <button className="icon-btn icon-btn-green" onClick={() => onGenerateNow(tpl)} title="Generate Now"><Play size={15} /></button>
+                          <button
+                            className="icon-btn icon-btn-green"
+                            onClick={() => onGenerateNow(tpl)}
+                            title={isGenerating ? 'Generating invoice' : 'Generate Now'}
+                            disabled={isGenerating}
+                          ><Play size={15} /></button>
                         )}
                         <button className="icon-btn icon-btn-blue" onClick={() => onToggleActive(tpl)} title={tpl.active !== false ? 'Pause' : 'Activate'}>
                           {tpl.active !== false ? <Pause size={15} /> : <Play size={15} />}

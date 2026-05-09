@@ -22,6 +22,7 @@ import {
   LogOut,
   Menu,
   LayoutDashboard,
+  Mail,
 } from "lucide-react";
 import { getAllProfiles, getProfile, saveProfile } from "./store";
 import {
@@ -40,15 +41,37 @@ import RecurringInvoices from "./components/RecurringInvoices";
 import ReceiptVoucher from "./components/ReceiptVoucher";
 import GSTReturns from "./components/GSTReturns";
 import PurchaseBills from "./components/PurchaseBills";
+import LeadsView from "./components/LeadsView";
 import WelcomeGuide from "./components/WelcomeGuide";
 import LoginView from "./components/LoginView";
 import { LoadingPanel } from "./components/LoadingSpinner";
 import ToastContainer from "./components/Toast";
 import { PrivacyProvider, PrivacyToggleButton } from "./components/PrivacyContext";
 
+const VIEW_IDS = new Set([
+  "dashboard",
+  "new",
+  "clients",
+  "leads",
+  "inventory",
+  "expenses",
+  "purchases",
+  "recurring",
+  "receipts",
+  "reports",
+  "filing",
+  "settings",
+]);
+
+function getHashView() {
+  const hashView = window.location.hash.replace(/^#\/?/, "");
+  return VIEW_IDS.has(hashView) ? hashView : "";
+}
+
 function App() {
   const [currentView, setCurrentView] = useState(() => {
-    return sessionStorage.getItem("gst_currentView") || "dashboard";
+    const hashView = getHashView();
+    return hashView || sessionStorage.getItem("gst_currentView") || "dashboard";
   });
   const [profile, setProfile] = useState(null);
   const [editingBill, setEditingBill] = useState(() => {
@@ -157,7 +180,20 @@ function App() {
 
   useEffect(() => {
     sessionStorage.setItem("gst_currentView", currentView);
+    if (VIEW_IDS.has(currentView) && window.location.hash !== `#${currentView}`) {
+      window.history.replaceState(null, "", `#${currentView}`);
+    }
   }, [currentView]);
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hashView = getHashView();
+      if (hashView) setCurrentView(hashView);
+    };
+
+    window.addEventListener("hashchange", handleHashChange);
+    return () => window.removeEventListener("hashchange", handleHashChange);
+  }, []);
 
   useEffect(() => {
     if (editingBill) {
@@ -253,6 +289,7 @@ function App() {
     { id: "dashboard", icon: Home, label: "Dashboard" },
     { id: "new", icon: Plus, label: "New Invoice", onClick: handleNewInvoice },
     { id: "clients", icon: Users, label: "Clients" },
+    { id: "leads", icon: Mail, label: "Leads" },
     { id: "inventory", icon: Package, label: "Products" },
     { id: "expenses", icon: Wallet, label: "Expenses" },
     { id: "purchases", icon: ShoppingCart, label: "Purchases" },
@@ -564,6 +601,7 @@ function App() {
             onDuplicate={handleDuplicateInvoice}
           />
         )}
+        {currentView === "leads" && <LeadsView />}
         {currentView === "inventory" && <InventoryView />}
         {currentView === "expenses" && <ExpenseTracker />}
         {currentView === "purchases" && <PurchaseBills />}
